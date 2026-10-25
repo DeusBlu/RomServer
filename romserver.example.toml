@@ -1,0 +1,45 @@
+# RomServer settings. In the container this lives at /config/settings/romserver.toml.
+
+# Source share: only the library tools ever write here.
+library_root = "/mnt/user/ROMS"
+# Must be reached through the same container mount as library_root, or hard links fail.
+views_root = "/mnt/user/views"
+database = "/config/data/romserver.sqlite"
+
+# Short system name (ES-DE style) → folder under library_root.
+[systems]
+psx = { folder = "PSX" }
+ps2 = { folder = "PS2" }
+saturn = { folder = "Saturn" }
+segacd = { folder = "SegaCD" }
+snes = { folder = "SNES" }
+nes = { folder = "NES" }
+genesis = { folder = "Genesis" }
+n64 = { folder = "N64" }
+gba = { folder = "GameboyAdvance" }
+pcengine = { folder = "PCEngine" }
+psp = { folder = "PSP" }
+
+# "Emulators I use": chosen once, for every machine.
+[emulators]
+snes9x = { systems = ["snes"] }
+mesen = { systems = ["nes"] }
+genesis-plus-gx = { systems = ["genesis", "segacd"] }
+beetle-psx = { systems = ["psx"] }
+beetle-saturn = { systems = ["saturn"] }
+beetle-pce = { systems = ["pcengine"] }
+mupen64plus = { systems = ["n64"] }
+mgba = { systems = ["gba"] }
+pcsx2 = { systems = ["ps2"] }
+ppsspp = { systems = ["psp"] }
+
+# One entry per machine. Its view is views_root/<name>; emulators is its checklist.
+[nodes.desktop]
+frontend = "es-de"
+multi_disc = "m3u"   # m3u | discs | m3u-directory
+emulators = ["snes9x", "mesen", "genesis-plus-gx", "beetle-psx", "beetle-saturn", "beetle-pce", "mupen64plus", "mgba", "pcsx2", "ppsspp"]
+
+[nodes.pi2]
+frontend = "es-de"
+multi_disc = "discs"
+emulators = ["snes9x", "mesen", "genesis-plus-gx", "mgba"]
