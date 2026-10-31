@@ -1,19 +1,23 @@
+mod auth;
 mod catalog;
 mod cuefix;
+mod emulators;
+mod ops;
 mod project;
 mod scan;
 mod settings;
 mod sync;
 #[cfg(test)]
 mod tests;
+mod web;
 
 use std::path::PathBuf;
 
-use anyhow::{Result, bail};
+use anyhow::Result;
 use clap::{Parser, Subcommand};
 
 use crate::catalog::Catalog;
-use crate::project::Link;
+use crate::ops::Target;
 use crate::settings::Settings;
 
 #[derive(Parser)]
@@ -34,6 +38,18 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
+    /// Run the web UI.
+    Serve {
+        #[arg(long, env = "ROMSERVER_LISTEN", default_value = "0.0.0.0:8080")]
+        listen: String,
+        /// Login password hash (same format as Lantern's). Delete it to reset the password.
+        #[arg(
+            long,
+            env = "ROMSERVER_PASSWORD_FILE",
+            default_value = "/config/data/password.lock"
+        )]
+        password_file: PathBuf,
+    },
     /// Scan library systems and report games, saves and problems. Read-only.
     Scan {
         /// Limit to one system (short name, e.g. psx).
@@ -43,14 +59,14 @@ enum Command {
         #[arg(long)]
         verbose: bool,
     },
-    /// Show what `apply` would change in a node's view. Read-only.
+    /// Show what `apply` would change in a machine's view. Read-only.
     Plan {
         #[arg(long)]
         node: String,
         #[arg(long)]
         verbose: bool,
     },
-    /// Build or update a node's view.
+    /// Build or update a machine's view.
     Apply {
         #[arg(long)]
         node: String,
@@ -75,14 +91,32 @@ enum Command {
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
+    if let Command::Serve {
+        listen,
+        password_file,
+    } = &cli.command
+    {
+        // The UI loads settings per request, so it can start (and help fix) a broken file.
+        return tokio::runtime::Runtime::new()?.block_on(web::serve(
+            cli.config.clone(),
+            listen,
+            password_file.clone(),
+        ));
+    }
     let settings = Settings::load(&cli.config)?;
     match cli.command {
+        Command::Serve { .. } => unreachable!(),
         Command::Scan { system, verbose } => cmd_scan(&settings, system.as_deref(), verbose),
         Command::Cues { system, fix, yes } => cmd_cues(&settings, system.as_deref(), fix, yes),
         Command::Plan { node, verbose } => {
             let catalog = Catalog::open(&settings.database)?;
-            let (plan, _) = build_plan(&settings, &catalog, &node, false)?;
-            print_plan(&plan, verbose);
+            let np = ops::plan_node(
+                &settings,
+                &catalog,
+                &node,
+                Target::Settings { allow_empty: false },
+            )?;
+            print_plan(&np, verbose);
             Ok(())
         }
         Command::Apply {
@@ -91,9 +125,9 @@ fn main() -> Result<()> {
             allow_empty,
         } => {
             let mut catalog = Catalog::open(&settings.database)?;
-            let (plan, view_root) = build_plan(&settings, &catalog, &node, allow_empty)?;
-            print_plan(&plan, false);
-            if plan.is_noop() {
+            let np = ops::plan_node(&settings, &catalog, &node, Target::Settings { allow_empty })?;
+            print_plan(&np, false);
+            if np.plan.is_noop() {
                 println!("Nothing to do.");
                 return Ok(());
             }
@@ -101,7 +135,7 @@ fn main() -> Result<()> {
                 println!("Aborted.");
                 return Ok(());
             }
-            sync::apply(&mut catalog, &node, &view_root, &plan)?;
+            sync::apply(&mut catalog, &node, &np.view_root, &np.plan)?;
             println!("Applied.");
             Ok(())
         }
@@ -114,26 +148,21 @@ fn cmd_scan(settings: &Settings, only: Option<&str>, verbose: bool) -> Result<()
         .keys()
         .filter(|s| only.is_none_or(|o| o == s.as_str()))
     {
-        let root = settings.system_root(system)?;
-        let scan = scan::scan_system(&root)?;
-        let multi = scan
-            .games
-            .iter()
-            .filter(|g| matches!(g, scan::Game::MultiDisc { .. }))
-            .count();
+        let s = ops::summarise_system(settings, system)?;
         println!(
-            "{system} ({}): {} games ({multi} multi-disc), {} saves, {} ignored, {} issues",
-            root.display(),
-            scan.games.len(),
-            scan.saves.len(),
-            scan.ignored.len(),
-            scan.issues.len()
+            "{system} ({}): {} games ({} multi-disc), {} saves, {} ignored, {} issues",
+            s.root.display(),
+            s.games,
+            s.multi_disc,
+            s.saves,
+            s.ignored,
+            s.issues.len()
         );
-        for issue in &scan.issues {
+        for issue in &s.issues {
             println!("  ! {issue}");
         }
         if verbose {
-            for g in &scan.games {
+            for g in scan::scan_system(&s.root)?.games {
                 println!("  {}", g.name());
             }
         }
@@ -142,14 +171,7 @@ fn cmd_scan(settings: &Settings, only: Option<&str>, verbose: bool) -> Result<()
 }
 
 fn cmd_cues(settings: &Settings, only: Option<&str>, fix: bool, yes: bool) -> Result<()> {
-    let mut reports = Vec::new();
-    for system in settings
-        .systems
-        .keys()
-        .filter(|s| only.is_none_or(|o| o == s.as_str()))
-    {
-        reports.extend(cuefix::check(&settings.system_root(system)?)?);
-    }
+    let reports = ops::check_cues(settings, only)?;
     for r in &reports {
         for b in &r.bad {
             match &b.verdict {
@@ -180,41 +202,11 @@ fn cmd_cues(settings: &Settings, only: Option<&str>, fix: bool, yes: bool) -> Re
     Ok(())
 }
 
-fn build_plan(
-    settings: &Settings,
-    catalog: &Catalog,
-    node_name: &str,
-    allow_empty: bool,
-) -> Result<(sync::Plan, PathBuf)> {
-    let node = settings.node(node_name)?;
-    let owned = catalog.owned(node_name)?;
-    let mut links: Vec<Link> = Vec::new();
-    for system in settings.node_systems(node) {
-        let root = settings.system_root(system)?;
-        let scan = scan::scan_system(&root)?;
-        for issue in &scan.issues {
-            eprintln!("warning: {system}: {issue}");
-        }
-        let projection =
-            project::project_system(node.frontend, system, &root, &scan, node.multi_disc)?;
-        for w in &projection.warnings {
-            eprintln!("warning: {system}: {w}");
-        }
-        let had_entries = owned.keys().any(|p| p.starts_with(system));
-        if projection.links.is_empty() && had_entries && !allow_empty {
-            bail!(
-                "{system}: library folder {} has no games but the view had some. \
-                 Is the share mounted? Re-run with --allow-empty if this is intended.",
-                root.display()
-            );
-        }
-        links.extend(projection.links);
+fn print_plan(np: &ops::NodePlan, verbose: bool) {
+    for w in &np.warnings {
+        eprintln!("warning: {w}");
     }
-    let view_root = settings.view_root(node_name);
-    Ok((sync::plan(&view_root, links, &owned)?, view_root))
-}
-
-fn print_plan(plan: &sync::Plan, verbose: bool) {
+    let plan = &np.plan;
     println!(
         "create {}, replace {}, remove {}, unchanged {}, conflicts {}",
         plan.create.len(),
@@ -232,20 +224,11 @@ fn print_plan(plan: &sync::Plan, verbose: bool) {
             println!("  … {} more (use --verbose)", items.len() - limit);
         }
     };
-    show(
-        "+",
-        plan.create
-            .iter()
-            .map(|l| l.dst.display().to_string())
-            .collect(),
-    );
-    show(
-        "~",
-        plan.replace
-            .iter()
-            .map(|l| l.dst.display().to_string())
-            .collect(),
-    );
+    let paths = |links: &[project::Link]| -> Vec<String> {
+        links.iter().map(|l| l.dst.display().to_string()).collect()
+    };
+    show("+", paths(&plan.create));
+    show("~", paths(&plan.replace));
     show(
         "-",
         plan.remove

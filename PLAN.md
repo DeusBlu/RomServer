@@ -260,6 +260,38 @@ Rules and edge cases:
 6. **Save states are emulator-version specific.** Clients on different emulator versions will
    fail to load each other's states. In-game saves are safe. Note this in the UI.
 
+### Save monitoring: two features
+
+RetroArch decides where a save goes with two separate settings: `savefiles_in_content_dir`
+(**Write Saves to Content Directory**, or no `savefile_directory` set) puts it beside the ROM, and
+`sort_savefiles_enable` (**Sort Saves into Folders by Core Name**) adds the core subfolder. With
+per-core mounts, the first leaves direct evidence on the server; the second leaves none.
+
+**1. Save monitor (automatic, direct evidence).** A background job inside RomServer walks every
+machine's view and compares it with what RomServer created (`view_entry`). It runs on a timer
+(about a minute), which is the source of truth; inotify can be added to react faster, but changes
+arriving over SMB/FUSE may not trigger it. A file RomServer didn't create is an **alert**:
+- a save-type file (`.srm`, `.sav`, `.state*`, …) beside a ROM → banner: *"steam-machine wrote
+  `Chrono Trigger (USA).srm` into its view: Write Saves to Content Directory is on (or no save
+  folder is set) on that machine."* Action: **adopt** (move it into the shared save folder for the
+  machine's core for that system, then remove it from the view).
+- any other unknown file (scraped media, gamelist, …) → a quieter notice.
+
+Alerts are stored in SQLite (kind, machine, path, first seen, dismissed) and shown as a banner on
+every page until resolved (the file is gone or adopted) or dismissed.
+
+**2. Check button ("my save didn't carry over").** The user picks a machine and a game. RomServer
+runs the monitor immediately, then searches for the save by name (RetroArch names it after the
+launched file, so the `.m3u` name for multi-disc games):
+- found in the shared folder for the ticked core → it reached the server; the other machine hasn't
+  re-read it, or launched with a different core;
+- found in a view → the monitor's alert and its adopt action;
+- found under **another core's** folder → the game was launched with a different core;
+- **found nowhere** → a troubleshooting list, most likely first: "Sort Saves into Folders by Core
+  Name" is off (the save is in the root of the client's local saves folder); the save mount was
+  down; that core isn't ticked for that machine (no mount); the machine's install type
+  (Flatpak vs native) is wrong.
+
 ### Optional: client save guardian
 
 The weak point is on the client. If the mount drops, or an emulator/frontend update replaces
@@ -390,6 +422,31 @@ On Unraid, the container (`Dockerfile`, loaded via the `unraid` context) project
 Genesis + SegaCD into a scratch share: 10,088 links, a re-plan was a no-op, the `m3u` → `discs`
 switch removed 255 and created 180, and **0 files in ROMS were created or modified**. Scratch
 share and image removed afterwards.
+
+**Milestone 2 status (2026-10-25): built.** `romserver serve` (the container's default command,
+port 8080): axum + maud server-rendered pages + htmx 2.0.4, with no JS build step. htmx is embedded
+in the binary but not committed: `tools/fetch_htmx.sh` downloads the pinned version and checks its
+SHA-256 (run it once after cloning; the Dockerfile runs it). The UI lives in `src/web/`, one module
+per page. Pages:
+Overview, Library (scan; check and fix cues), Emulators (the global list; removing one also unticks
+it on every machine), Machines (add; frontend, multi-disc mode and emulator checklist; preview →
+confirm → apply; clear view; remove only once the view is empty). The UI rewrites
+`romserver.toml` atomically, but comments in it are lost. Apply and cue-fix refuse if the
+recomputed plan differs from the preview's counts. One file-changing operation runs at a time.
+Login was added afterwards (see the emulator catalog note below). Verified on Unraid through HTTP: 9,056 links applied,
+re-preview "up to date", remove refused while links existed, clear removed 9,056; cleaned up.
+
+**Emulator catalog (2026-10-25).** `tools/build_catalog.py` builds `assets/emulators.json` from
+ES-DE's Linux `es_systems.xml` and `libretro-core-info` (both MIT): 195 systems and 294 emulators,
+174 of them RetroArch cores. Core ids are `ra-<core file stem>` and carry `corename`, which is
+RetroArch's save folder with sort-by-core (e.g. `Snes9x`). Standalone ids come from ES-DE's
+`%EMULATOR_X%` variable (`duckstation`). Launchers (shortcuts, Wine, Proton, UMU) are excluded.
+The catalog is embedded in the binary and loaded into SQLite (`emu_system`, `emu_emulator`,
+`emu_support`) once per run. User choices stay in the TOML: `[uses]` system → emulator ids
+(ticking one emulator under several systems = "I use it for all of these"), plus
+`[custom_emulators.custom-<slug>]` with a name and systems. Each machine's `uses` is a subset of
+the global one; unticking globally prunes machines. A machine's view = the systems it has ticks
+for. Login: Lantern's scheme (`src/auth.rs`).
 
 **View rule: views are immutable/additive.** View files are never written; any change is
 remove + fresh link.

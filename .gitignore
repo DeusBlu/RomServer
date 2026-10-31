@@ -1,4 +1,6 @@
 /target/
 /undo/
+# Fetched by tools/fetch_htmx.sh (pinned version + checksum).
+/assets/htmx.min.js
 *.tsv
 .claude/settings.local.json

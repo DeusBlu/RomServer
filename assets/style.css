@@ -1,0 +1,67 @@
+:root {
+  --bg: #f6f7f9; --panel: #fff; --text: #1d2330; --muted: #6b7385; --line: #dfe3ea;
+  --accent: #3858e9; --ok: #1f7a4a; --okbg: #e7f5ed; --warn: #9a5b00; --warnbg: #fff4e0;
+  --bad: #b3261e; --badbg: #fdecea;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14171d; --panel: #1c2028; --text: #e6e9ef; --muted: #9aa3b5; --line: #2c323d;
+    --accent: #7b93ff; --ok: #6fd39b; --okbg: #17301f; --warn: #f0b45c; --warnbg: #33270f;
+    --bad: #ff8a80; --badbg: #3a1714;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; font: 15px/1.5 system-ui, sans-serif; background: var(--bg); color: var(--text); }
+nav { display: flex; gap: 1.25rem; align-items: center; padding: .75rem 1.5rem;
+      background: var(--panel); border-bottom: 1px solid var(--line); }
+nav .brand { font-weight: 700; margin-right: 1rem; }
+nav a { color: var(--muted); text-decoration: none; }
+nav a.active, nav a:hover { color: var(--text); }
+nav form.push { margin-left: auto; }
+main { max-width: 1000px; margin: 0 auto; padding: 1.5rem; }
+h1 { margin-top: 0; }
+h2 { margin-top: 2rem; font-size: 1.15rem; }
+a { color: var(--accent); }
+code { font-size: .9em; word-break: break-all; }
+.muted { color: var(--muted); }
+table.grid { width: 100%; border-collapse: collapse; background: var(--panel);
+             border: 1px solid var(--line); margin: .5rem 0 1rem; }
+table.grid th, table.grid td { text-align: left; padding: .45rem .7rem; border-bottom: 1px solid var(--line);
+                               vertical-align: top; }
+table.grid th { font-weight: 600; color: var(--muted); }
+td.ok { color: var(--ok); } td.warn, .card.warn .big { color: var(--warn); }
+.cards { display: flex; gap: .75rem; flex-wrap: wrap; margin: .75rem 0; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+        padding: .75rem 1rem; min-width: 120px; }
+.card .big { font-size: 1.6rem; font-weight: 700; }
+.notice { padding: .7rem 1rem; border-radius: 8px; margin: .75rem 0; }
+.notice.ok { background: var(--okbg); color: var(--ok); }
+.notice.error { background: var(--badbg); color: var(--bad); }
+button { font: inherit; padding: .45rem .9rem; border-radius: 6px; border: 1px solid var(--accent);
+         background: var(--accent); color: #fff; cursor: pointer; }
+button.secondary { background: transparent; color: var(--accent); }
+button.danger { background: var(--bad); border-color: var(--bad); }
+button.link { background: none; border: none; color: var(--bad); padding: 0; text-decoration: underline; }
+form.stack { display: flex; flex-direction: column; gap: .75rem; max-width: 640px; }
+form.stack label { display: flex; gap: .5rem; align-items: center; }
+input, select { font: inherit; padding: .35rem .5rem; border: 1px solid var(--line); border-radius: 6px;
+                background: var(--panel); color: var(--text); }
+fieldset { border: 1px solid var(--line); border-radius: 8px; display: flex; flex-direction: column; gap: .35rem; }
+label.check { display: flex; gap: .5rem; align-items: baseline; }
+.row { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; }
+details { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: .5rem .8rem;
+          margin: .5rem 0; }
+summary { cursor: pointer; font-weight: 600; }
+ul.paths { max-height: 320px; overflow: auto; font-family: ui-monospace, monospace; font-size: .85em; }
+.spinner { margin-left: .5rem; color: var(--muted); }
+.htmx-indicator { display: none; }
+.htmx-request .htmx-indicator, .htmx-request.htmx-indicator { display: inline; }
+.tag { font-size: .75em; padding: .05rem .45rem; border-radius: 999px; border: 1px solid var(--line);
+       color: var(--muted); white-space: nowrap; }
+.tag.ra { color: var(--accent); border-color: var(--accent); }
+.tag.custom { color: var(--warn); border-color: var(--warn); }
+.tag.count { color: var(--ok); border-color: var(--ok); }
+.small { font-size: .8em; }
+.savebar { position: sticky; bottom: 0; padding: .75rem 0; background: var(--bg); }
+fieldset .group { display: flex; flex-direction: column; gap: .25rem; margin-bottom: .5rem; }
+details label.check { padding: .1rem 0; }

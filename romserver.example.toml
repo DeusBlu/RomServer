@@ -20,26 +20,27 @@ gba = { folder = "GameboyAdvance" }
 pcengine = { folder = "PCEngine" }
 psp = { folder = "PSP" }
 
-# "Emulators I use": chosen once, for every machine.
-[emulators]
-snes9x = { systems = ["snes"] }
-mesen = { systems = ["nes"] }
-genesis-plus-gx = { systems = ["genesis", "segacd"] }
-beetle-psx = { systems = ["psx"] }
-beetle-saturn = { systems = ["saturn"] }
-beetle-pce = { systems = ["pcengine"] }
-mupen64plus = { systems = ["n64"] }
-mgba = { systems = ["gba"] }
-pcsx2 = { systems = ["ps2"] }
-ppsspp = { systems = ["psp"] }
+# "Emulators I use", per system (ids from the catalog, or custom-…). Normally set in the UI.
+[uses]
+snes = ["ra-snes9x"]
+nes = ["ra-mesen"]
+genesis = ["ra-genesis_plus_gx"]
+segacd = ["ra-genesis_plus_gx"]
+psx = ["ra-mednafen_psx", "duckstation"]
+saturn = ["ra-mednafen_saturn"]
+pcengine = ["ra-mednafen_pce"]
+n64 = ["ra-mupen64plus_next"]
+gba = ["ra-mgba"]
+ps2 = ["pcsx2"]
+psp = ["ppsspp"]
 
-# One entry per machine. Its view is views_root/<name>; emulators is its checklist.
+# One entry per machine. Its view is views_root/<name>; uses is its checklist (a subset of the above).
 [nodes.desktop]
 frontend = "es-de"
 multi_disc = "m3u"   # m3u | discs | m3u-directory
-emulators = ["snes9x", "mesen", "genesis-plus-gx", "beetle-psx", "beetle-saturn", "beetle-pce", "mupen64plus", "mgba", "pcsx2", "ppsspp"]
+uses = { snes = ["ra-snes9x"], psx = ["ra-mednafen_psx"], ps2 = ["pcsx2"] }
 
 [nodes.pi2]
 frontend = "es-de"
 multi_disc = "discs"
-emulators = ["snes9x", "mesen", "genesis-plus-gx", "mgba"]
+uses = { snes = ["ra-snes9x"], nes = ["ra-mesen"], genesis = ["ra-genesis_plus_gx"], gba = ["ra-mgba"] }
