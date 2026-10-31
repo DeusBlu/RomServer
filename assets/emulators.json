@@ -1,0 +1,4083 @@
+{
+ "generated": "2026-10-25",
+ "sources": {
+  "es-de": "https://gitlab.com/es-de/emulationstation-de/-/raw/master/resources/systems/linux/es_systems.xml",
+  "libretro-core-info": "https://codeload.github.com/libretro/libretro-core-info/tar.gz/refs/heads/master"
+ },
+ "systems": [
+  {
+   "id": "3do",
+   "name": "3DO Interactive Multiplayer"
+  },
+  {
+   "id": "adam",
+   "name": "Coleco Adam"
+  },
+  {
+   "id": "ags",
+   "name": "Adventure Game Studio Game Engine"
+  },
+  {
+   "id": "amiga",
+   "name": "Commodore Amiga"
+  },
+  {
+   "id": "amiga1200",
+   "name": "Commodore Amiga 1200"
+  },
+  {
+   "id": "amiga600",
+   "name": "Commodore Amiga 600"
+  },
+  {
+   "id": "amigacd32",
+   "name": "Commodore Amiga CD32"
+  },
+  {
+   "id": "amstradcpc",
+   "name": "Amstrad CPC"
+  },
+  {
+   "id": "android",
+   "name": "Google Android"
+  },
+  {
+   "id": "androidapps",
+   "name": "Android Apps"
+  },
+  {
+   "id": "androidgames",
+   "name": "Android Games"
+  },
+  {
+   "id": "apple2",
+   "name": "Apple II"
+  },
+  {
+   "id": "apple2gs",
+   "name": "Apple IIGS"
+  },
+  {
+   "id": "arcade",
+   "name": "Arcade"
+  },
+  {
+   "id": "arcadia",
+   "name": "Emerson Arcadia 2001"
+  },
+  {
+   "id": "archimedes",
+   "name": "Acorn Archimedes"
+  },
+  {
+   "id": "arduboy",
+   "name": "Arduboy Miniature Game System"
+  },
+  {
+   "id": "astrocde",
+   "name": "Bally Astrocade"
+  },
+  {
+   "id": "atari2600",
+   "name": "Atari 2600"
+  },
+  {
+   "id": "atari5200",
+   "name": "Atari 5200"
+  },
+  {
+   "id": "atari7800",
+   "name": "Atari 7800 ProSystem"
+  },
+  {
+   "id": "atari800",
+   "name": "Atari 800"
+  },
+  {
+   "id": "atarijaguar",
+   "name": "Atari Jaguar"
+  },
+  {
+   "id": "atarijaguarcd",
+   "name": "Atari Jaguar CD"
+  },
+  {
+   "id": "atarilynx",
+   "name": "Atari Lynx"
+  },
+  {
+   "id": "atarist",
+   "name": "Atari ST"
+  },
+  {
+   "id": "atarixe",
+   "name": "Atari XE"
+  },
+  {
+   "id": "atomiswave",
+   "name": "Sammy Corporation Atomiswave"
+  },
+  {
+   "id": "bbcmicro",
+   "name": "Acorn Computers BBC Micro"
+  },
+  {
+   "id": "c64",
+   "name": "Commodore 64"
+  },
+  {
+   "id": "cdimono1",
+   "name": "Philips CD-i"
+  },
+  {
+   "id": "cdtv",
+   "name": "Commodore CDTV"
+  },
+  {
+   "id": "chailove",
+   "name": "ChaiLove Game Engine"
+  },
+  {
+   "id": "channelf",
+   "name": "Fairchild Channel F"
+  },
+  {
+   "id": "coco",
+   "name": "Tandy Color Computer"
+  },
+  {
+   "id": "colecovision",
+   "name": "Coleco ColecoVision"
+  },
+  {
+   "id": "consolearcade",
+   "name": "Console Arcade Systems"
+  },
+  {
+   "id": "cps",
+   "name": "Capcom Play System"
+  },
+  {
+   "id": "cps1",
+   "name": "Capcom Play System I"
+  },
+  {
+   "id": "cps2",
+   "name": "Capcom Play System II"
+  },
+  {
+   "id": "cps3",
+   "name": "Capcom Play System III"
+  },
+  {
+   "id": "crvision",
+   "name": "VTech CreatiVision"
+  },
+  {
+   "id": "daphne",
+   "name": "Daphne Arcade LaserDisc Emulator"
+  },
+  {
+   "id": "desktop",
+   "name": "Desktop Applications"
+  },
+  {
+   "id": "doom",
+   "name": "Doom"
+  },
+  {
+   "id": "dos",
+   "name": "DOS (PC)"
+  },
+  {
+   "id": "dragon32",
+   "name": "Dragon Data Dragon 32"
+  },
+  {
+   "id": "dreamcast",
+   "name": "Sega Dreamcast"
+  },
+  {
+   "id": "easyrpg",
+   "name": "EasyRPG Game Engine"
+  },
+  {
+   "id": "electron",
+   "name": "Acorn Electron"
+  },
+  {
+   "id": "emulators",
+   "name": "Emulators"
+  },
+  {
+   "id": "epic",
+   "name": "Epic Games Store"
+  },
+  {
+   "id": "famicom",
+   "name": "Nintendo Family Computer"
+  },
+  {
+   "id": "fba",
+   "name": "FinalBurn Alpha"
+  },
+  {
+   "id": "fbneo",
+   "name": "FinalBurn Neo"
+  },
+  {
+   "id": "fds",
+   "name": "Nintendo Famicom Disk System"
+  },
+  {
+   "id": "flash",
+   "name": "Adobe Flash"
+  },
+  {
+   "id": "fm7",
+   "name": "Fujitsu FM-7"
+  },
+  {
+   "id": "fmtowns",
+   "name": "Fujitsu FM Towns"
+  },
+  {
+   "id": "fpinball",
+   "name": "Future Pinball"
+  },
+  {
+   "id": "gamate",
+   "name": "Bit Corporation Gamate"
+  },
+  {
+   "id": "gameandwatch",
+   "name": "Nintendo Game and Watch"
+  },
+  {
+   "id": "gamecom",
+   "name": "Tiger Electronics Game.com"
+  },
+  {
+   "id": "gamegear",
+   "name": "Sega Game Gear"
+  },
+  {
+   "id": "gb",
+   "name": "Nintendo Game Boy"
+  },
+  {
+   "id": "gba",
+   "name": "Nintendo Game Boy Advance"
+  },
+  {
+   "id": "gbc",
+   "name": "Nintendo Game Boy Color"
+  },
+  {
+   "id": "gc",
+   "name": "Nintendo GameCube"
+  },
+  {
+   "id": "genesis",
+   "name": "Sega Genesis"
+  },
+  {
+   "id": "gmaster",
+   "name": "Hartung Game Master"
+  },
+  {
+   "id": "gx4000",
+   "name": "Amstrad GX4000"
+  },
+  {
+   "id": "intellivision",
+   "name": "Mattel Electronics Intellivision"
+  },
+  {
+   "id": "j2me",
+   "name": "Java 2 Micro Edition (J2ME)"
+  },
+  {
+   "id": "kodi",
+   "name": "Kodi Home Theatre Software"
+  },
+  {
+   "id": "laserdisc",
+   "name": "LaserDisc Games"
+  },
+  {
+   "id": "lcdgames",
+   "name": "LCD Handheld Games"
+  },
+  {
+   "id": "lowresnx",
+   "name": "LowRes NX Fantasy Console"
+  },
+  {
+   "id": "lutris",
+   "name": "Lutris Open Gaming Platform"
+  },
+  {
+   "id": "lutro",
+   "name": "Lutro Game Engine"
+  },
+  {
+   "id": "macintosh",
+   "name": "Apple Macintosh"
+  },
+  {
+   "id": "mame",
+   "name": "Multiple Arcade Machine Emulator"
+  },
+  {
+   "id": "mame-advmame",
+   "name": "AdvanceMAME"
+  },
+  {
+   "id": "mark3",
+   "name": "Sega Mark III"
+  },
+  {
+   "id": "mastersystem",
+   "name": "Sega Master System"
+  },
+  {
+   "id": "megacd",
+   "name": "Sega Mega-CD"
+  },
+  {
+   "id": "megacdjp",
+   "name": "Sega Mega-CD"
+  },
+  {
+   "id": "megadrive",
+   "name": "Sega Mega Drive"
+  },
+  {
+   "id": "megadrivejp",
+   "name": "Sega Mega Drive"
+  },
+  {
+   "id": "megaduck",
+   "name": "Creatronic Mega Duck"
+  },
+  {
+   "id": "mess",
+   "name": "Multi Emulator Super System"
+  },
+  {
+   "id": "model2",
+   "name": "Sega Model 2"
+  },
+  {
+   "id": "model3",
+   "name": "Sega Model 3"
+  },
+  {
+   "id": "moto",
+   "name": "Thomson MO/TO Series"
+  },
+  {
+   "id": "msx",
+   "name": "MSX"
+  },
+  {
+   "id": "msx1",
+   "name": "MSX1"
+  },
+  {
+   "id": "msx2",
+   "name": "MSX2"
+  },
+  {
+   "id": "msxturbor",
+   "name": "MSX Turbo R"
+  },
+  {
+   "id": "mugen",
+   "name": "M.U.G.E.N Game Engine"
+  },
+  {
+   "id": "multivision",
+   "name": "Othello Multivision"
+  },
+  {
+   "id": "n3ds",
+   "name": "Nintendo 3DS"
+  },
+  {
+   "id": "n64",
+   "name": "Nintendo 64"
+  },
+  {
+   "id": "n64dd",
+   "name": "Nintendo 64DD"
+  },
+  {
+   "id": "naomi",
+   "name": "Sega NAOMI"
+  },
+  {
+   "id": "naomi2",
+   "name": "Sega NAOMI 2"
+  },
+  {
+   "id": "naomigd",
+   "name": "Sega NAOMI GD-ROM"
+  },
+  {
+   "id": "nds",
+   "name": "Nintendo DS"
+  },
+  {
+   "id": "neogeo",
+   "name": "SNK Neo Geo"
+  },
+  {
+   "id": "neogeocd",
+   "name": "SNK Neo Geo CD"
+  },
+  {
+   "id": "neogeocdjp",
+   "name": "SNK Neo Geo CD"
+  },
+  {
+   "id": "nes",
+   "name": "Nintendo Entertainment System"
+  },
+  {
+   "id": "ngage",
+   "name": "Nokia N-Gage"
+  },
+  {
+   "id": "ngp",
+   "name": "SNK Neo Geo Pocket"
+  },
+  {
+   "id": "ngpc",
+   "name": "SNK Neo Geo Pocket Color"
+  },
+  {
+   "id": "odyssey2",
+   "name": "Magnavox Odyssey 2"
+  },
+  {
+   "id": "openbor",
+   "name": "OpenBOR Game Engine"
+  },
+  {
+   "id": "oric",
+   "name": "Tangerine Computer Systems Oric"
+  },
+  {
+   "id": "palm",
+   "name": "Palm OS"
+  },
+  {
+   "id": "pc",
+   "name": "IBM PC"
+  },
+  {
+   "id": "pc88",
+   "name": "NEC PC-8800 Series"
+  },
+  {
+   "id": "pc98",
+   "name": "NEC PC-9800 Series"
+  },
+  {
+   "id": "pcarcade",
+   "name": "PC Arcade Systems"
+  },
+  {
+   "id": "pcengine",
+   "name": "NEC PC Engine"
+  },
+  {
+   "id": "pcenginecd",
+   "name": "NEC PC Engine CD"
+  },
+  {
+   "id": "pcfx",
+   "name": "NEC PC-FX"
+  },
+  {
+   "id": "pico8",
+   "name": "PICO-8 Fantasy Console"
+  },
+  {
+   "id": "plus4",
+   "name": "Commodore Plus/4"
+  },
+  {
+   "id": "pokemini",
+   "name": "Nintendo Pokémon Mini"
+  },
+  {
+   "id": "ports",
+   "name": "Ports"
+  },
+  {
+   "id": "ps2",
+   "name": "Sony PlayStation 2"
+  },
+  {
+   "id": "ps3",
+   "name": "Sony PlayStation 3"
+  },
+  {
+   "id": "ps4",
+   "name": "Sony PlayStation 4"
+  },
+  {
+   "id": "psp",
+   "name": "Sony PlayStation Portable"
+  },
+  {
+   "id": "psvita",
+   "name": "Sony PlayStation Vita"
+  },
+  {
+   "id": "psx",
+   "name": "Sony PlayStation"
+  },
+  {
+   "id": "pv1000",
+   "name": "Casio PV-1000"
+  },
+  {
+   "id": "quake",
+   "name": "Quake"
+  },
+  {
+   "id": "samcoupe",
+   "name": "MGT SAM Coupé"
+  },
+  {
+   "id": "satellaview",
+   "name": "Nintendo Satellaview"
+  },
+  {
+   "id": "saturn",
+   "name": "Sega Saturn"
+  },
+  {
+   "id": "saturnjp",
+   "name": "Sega Saturn"
+  },
+  {
+   "id": "scummvm",
+   "name": "ScummVM Game Engine"
+  },
+  {
+   "id": "scv",
+   "name": "Epoch Super Cassette Vision"
+  },
+  {
+   "id": "sega32x",
+   "name": "Sega Mega Drive 32X"
+  },
+  {
+   "id": "sega32xjp",
+   "name": "Sega Super 32X"
+  },
+  {
+   "id": "sega32xna",
+   "name": "Sega Genesis 32X"
+  },
+  {
+   "id": "segacd",
+   "name": "Sega CD"
+  },
+  {
+   "id": "sfc",
+   "name": "Nintendo SFC (Super Famicom)"
+  },
+  {
+   "id": "sg-1000",
+   "name": "Sega SG-1000"
+  },
+  {
+   "id": "sgb",
+   "name": "Nintendo Super Game Boy"
+  },
+  {
+   "id": "snes",
+   "name": "Nintendo SNES (Super Nintendo)"
+  },
+  {
+   "id": "snesna",
+   "name": "Nintendo SNES (Super Nintendo)"
+  },
+  {
+   "id": "solarus",
+   "name": "Solarus Game Engine"
+  },
+  {
+   "id": "spectravideo",
+   "name": "Spectravideo"
+  },
+  {
+   "id": "steam",
+   "name": "Valve Steam"
+  },
+  {
+   "id": "stv",
+   "name": "Sega Titan Video Game System"
+  },
+  {
+   "id": "sufami",
+   "name": "Bandai SuFami Turbo"
+  },
+  {
+   "id": "supergrafx",
+   "name": "NEC SuperGrafx"
+  },
+  {
+   "id": "supervision",
+   "name": "Watara Supervision"
+  },
+  {
+   "id": "supracan",
+   "name": "Funtech Super A'Can"
+  },
+  {
+   "id": "switch",
+   "name": "Nintendo Switch"
+  },
+  {
+   "id": "symbian",
+   "name": "Symbian"
+  },
+  {
+   "id": "tanodragon",
+   "name": "Tano Dragon"
+  },
+  {
+   "id": "tg16",
+   "name": "NEC TurboGrafx-16"
+  },
+  {
+   "id": "tg-cd",
+   "name": "NEC TurboGrafx-CD"
+  },
+  {
+   "id": "ti99",
+   "name": "Texas Instruments TI-99"
+  },
+  {
+   "id": "tic80",
+   "name": "TIC-80 Fantasy Computer"
+  },
+  {
+   "id": "to8",
+   "name": "Thomson TO8"
+  },
+  {
+   "id": "triforce",
+   "name": "Namco-Sega-Nintendo Triforce"
+  },
+  {
+   "id": "trs-80",
+   "name": "Tandy TRS-80"
+  },
+  {
+   "id": "type-x",
+   "name": "Taito Type X"
+  },
+  {
+   "id": "uzebox",
+   "name": "Uzebox Open Source Console"
+  },
+  {
+   "id": "vectrex",
+   "name": "GCE Vectrex"
+  },
+  {
+   "id": "vic20",
+   "name": "Commodore VIC-20"
+  },
+  {
+   "id": "videopac",
+   "name": "Philips Videopac G7000"
+  },
+  {
+   "id": "vircon32",
+   "name": "Vircon32 Virtual Console"
+  },
+  {
+   "id": "virtualboy",
+   "name": "Nintendo Virtual Boy"
+  },
+  {
+   "id": "vpinball",
+   "name": "Visual Pinball"
+  },
+  {
+   "id": "vsmile",
+   "name": "VTech V.Smile"
+  },
+  {
+   "id": "wasm4",
+   "name": "WASM-4 Fantasy Console"
+  },
+  {
+   "id": "wii",
+   "name": "Nintendo Wii"
+  },
+  {
+   "id": "wiiu",
+   "name": "Nintendo Wii U"
+  },
+  {
+   "id": "windows",
+   "name": "Microsoft Windows"
+  },
+  {
+   "id": "windows3x",
+   "name": "Microsoft Windows 3.x"
+  },
+  {
+   "id": "windows9x",
+   "name": "Microsoft Windows 9x"
+  },
+  {
+   "id": "wonderswan",
+   "name": "Bandai WonderSwan"
+  },
+  {
+   "id": "wonderswancolor",
+   "name": "Bandai WonderSwan Color"
+  },
+  {
+   "id": "x1",
+   "name": "Sharp X1"
+  },
+  {
+   "id": "x68000",
+   "name": "Sharp X68000"
+  },
+  {
+   "id": "xbox",
+   "name": "Microsoft Xbox"
+  },
+  {
+   "id": "xbox360",
+   "name": "Microsoft Xbox 360"
+  },
+  {
+   "id": "xboxone",
+   "name": "Microsoft Xbox One"
+  },
+  {
+   "id": "zmachine",
+   "name": "Infocom Z-machine"
+  },
+  {
+   "id": "zx81",
+   "name": "Sinclair ZX81"
+  },
+  {
+   "id": "zxnext",
+   "name": "Sinclair ZX Spectrum Next"
+  },
+  {
+   "id": "zxspectrum",
+   "name": "Sinclair ZX Spectrum"
+  }
+ ],
+ "emulators": [
+  {
+   "id": "3dsen",
+   "name": "3dSen",
+   "kind": "standalone",
+   "systems": [
+    "famicom",
+    "nes"
+   ]
+  },
+  {
+   "id": "3dsen-windows",
+   "name": "3dSen (Wine)",
+   "kind": "standalone",
+   "systems": [
+    "famicom",
+    "nes"
+   ]
+  },
+  {
+   "id": "a7800",
+   "name": "A7800",
+   "kind": "standalone",
+   "systems": [
+    "atari7800"
+   ]
+  },
+  {
+   "id": "ace-dl",
+   "name": "ACE-DL",
+   "kind": "standalone",
+   "systems": [
+    "amstradcpc"
+   ]
+  },
+  {
+   "id": "advancemame",
+   "name": "AdvanceMAME",
+   "kind": "standalone",
+   "systems": [
+    "mame-advmame"
+   ]
+  },
+  {
+   "id": "amiberry",
+   "name": "Amiberry",
+   "kind": "standalone",
+   "systems": [
+    "amiga",
+    "amiga1200",
+    "amiga600",
+    "amigacd32",
+    "cdtv"
+   ]
+  },
+  {
+   "id": "ares",
+   "name": "ares",
+   "kind": "standalone",
+   "systems": [
+    "atari2600",
+    "colecovision",
+    "daphne",
+    "famicom",
+    "fds",
+    "gamegear",
+    "gb",
+    "gba",
+    "gbc",
+    "genesis",
+    "laserdisc",
+    "mark3",
+    "mastersystem",
+    "megacd",
+    "megacdjp",
+    "megadrive",
+    "megadrivejp",
+    "msx",
+    "msx1",
+    "msx2",
+    "n64",
+    "n64dd",
+    "nes",
+    "ngp",
+    "ngpc",
+    "pcengine",
+    "pcenginecd",
+    "psx",
+    "satellaview",
+    "sega32x",
+    "sega32xjp",
+    "sega32xna",
+    "segacd",
+    "sfc",
+    "sg-1000",
+    "snes",
+    "snesna",
+    "sufami",
+    "supergrafx",
+    "tg16",
+    "tg-cd",
+    "wonderswan",
+    "wonderswancolor"
+   ]
+  },
+  {
+   "id": "atari800",
+   "name": "Atari800",
+   "kind": "standalone",
+   "systems": [
+    "atari5200",
+    "atari800",
+    "atarixe"
+   ]
+  },
+  {
+   "id": "azahar",
+   "name": "Azahar",
+   "kind": "standalone",
+   "systems": [
+    "n3ds"
+   ]
+  },
+  {
+   "id": "azaharplus",
+   "name": "AzaharPlus",
+   "kind": "standalone",
+   "systems": [
+    "n3ds"
+   ]
+  },
+  {
+   "id": "basiliskii",
+   "name": "Basilisk II",
+   "kind": "standalone",
+   "systems": [
+    "macintosh"
+   ]
+  },
+  {
+   "id": "bigpemu",
+   "name": "BigPEmu",
+   "kind": "standalone",
+   "systems": [
+    "atarijaguar",
+    "atarijaguarcd"
+   ]
+  },
+  {
+   "id": "bigpemu-windows",
+   "name": "BigPEmu (Wine)",
+   "kind": "standalone",
+   "systems": [
+    "atarijaguar",
+    "atarijaguarcd"
+   ]
+  },
+  {
+   "id": "blastem",
+   "name": "BlastEm",
+   "kind": "standalone",
+   "systems": [
+    "colecovision",
+    "gamegear",
+    "genesis",
+    "mark3",
+    "mastersystem",
+    "megacd",
+    "megacdjp",
+    "megadrive",
+    "megadrivejp",
+    "sega32x",
+    "sega32xjp",
+    "sega32xna",
+    "segacd",
+    "sg-1000"
+   ]
+  },
+  {
+   "id": "bsnes",
+   "name": "bsnes",
+   "kind": "standalone",
+   "systems": [
+    "satellaview",
+    "sfc",
+    "snes",
+    "snesna",
+    "sufami"
+   ]
+  },
+  {
+   "id": "cemu",
+   "name": "Cemu",
+   "kind": "standalone",
+   "systems": [
+    "wiiu"
+   ]
+  },
+  {
+   "id": "citra",
+   "name": "Citra",
+   "kind": "standalone",
+   "systems": [
+    "n3ds"
+   ]
+  },
+  {
+   "id": "colem",
+   "name": "ColEm",
+   "kind": "standalone",
+   "systems": [
+    "adam",
+    "colecovision"
+   ]
+  },
+  {
+   "id": "cpcemu",
+   "name": "CPCemu",
+   "kind": "standalone",
+   "systems": [
+    "amstradcpc"
+   ]
+  },
+  {
+   "id": "cspect",
+   "name": "#CSpect",
+   "kind": "standalone",
+   "systems": [
+    "zxnext"
+   ]
+  },
+  {
+   "id": "desmume",
+   "name": "DeSmuME",
+   "kind": "standalone",
+   "systems": [
+    "nds"
+   ]
+  },
+  {
+   "id": "dolphin",
+   "name": "Dolphin",
+   "kind": "standalone",
+   "systems": [
+    "consolearcade",
+    "gc",
+    "triforce",
+    "wii"
+   ]
+  },
+  {
+   "id": "dosbox-pure-unleashed",
+   "name": "DOSBox Pure Unleashed",
+   "kind": "standalone",
+   "systems": [
+    "dos",
+    "pc",
+    "windows3x",
+    "windows9x"
+   ]
+  },
+  {
+   "id": "dosbox-staging",
+   "name": "DOSBox Staging",
+   "kind": "standalone",
+   "systems": [
+    "dos",
+    "pc"
+   ]
+  },
+  {
+   "id": "dosbox-x",
+   "name": "DOSBox-X",
+   "kind": "standalone",
+   "systems": [
+    "dos",
+    "pc",
+    "windows3x",
+    "windows9x"
+   ]
+  },
+  {
+   "id": "dreamm",
+   "name": "DREAMM",
+   "kind": "standalone",
+   "systems": [
+    "dos",
+    "pc",
+    "scummvm"
+   ]
+  },
+  {
+   "id": "duckstation",
+   "name": "DuckStation",
+   "kind": "standalone",
+   "systems": [
+    "psx"
+   ]
+  },
+  {
+   "id": "easyrpg",
+   "name": "EasyRPG Player",
+   "kind": "standalone",
+   "systems": [
+    "easyrpg"
+   ]
+  },
+  {
+   "id": "eden",
+   "name": "Eden",
+   "kind": "standalone",
+   "systems": [
+    "switch"
+   ]
+  },
+  {
+   "id": "eka2l1",
+   "name": "EKA2L1",
+   "kind": "standalone",
+   "systems": [
+    "ngage",
+    "symbian"
+   ]
+  },
+  {
+   "id": "eka2l1-windows",
+   "name": "EKA2L1 (Wine)",
+   "kind": "standalone",
+   "systems": [
+    "ngage"
+   ]
+  },
+  {
+   "id": "emulicious",
+   "name": "Emulicious",
+   "kind": "standalone",
+   "systems": [
+    "gamegear",
+    "gb",
+    "gbc",
+    "mark3",
+    "mastersystem",
+    "msx",
+    "msx1",
+    "msx2"
+   ]
+  },
+  {
+   "id": "finalburn-neo",
+   "name": "FinalBurn Neo",
+   "kind": "standalone",
+   "systems": [
+    "arcade",
+    "cps",
+    "cps1",
+    "cps2",
+    "cps3",
+    "fbneo",
+    "mame",
+    "neogeo",
+    "neogeocd",
+    "neogeocdjp"
+   ]
+  },
+  {
+   "id": "flycast",
+   "name": "Flycast",
+   "kind": "standalone",
+   "systems": [
+    "arcade",
+    "atomiswave",
+    "consolearcade",
+    "dreamcast",
+    "mame",
+    "naomi",
+    "naomi2",
+    "naomigd"
+   ]
+  },
+  {
+   "id": "flycast-dojo",
+   "name": "Flycast Dojo",
+   "kind": "standalone",
+   "systems": [
+    "arcade",
+    "atomiswave",
+    "consolearcade",
+    "dreamcast",
+    "mame",
+    "naomi",
+    "naomi2",
+    "naomigd"
+   ]
+  },
+  {
+   "id": "fs-uae",
+   "name": "FS-UAE",
+   "kind": "standalone",
+   "systems": [
+    "amiga",
+    "amiga1200",
+    "amiga600",
+    "amigacd32",
+    "cdtv"
+   ]
+  },
+  {
+   "id": "fuse",
+   "name": "Fuse",
+   "kind": "standalone",
+   "systems": [
+    "zxspectrum"
+   ]
+  },
+  {
+   "id": "gargoyle",
+   "name": "Gargoyle",
+   "kind": "standalone",
+   "systems": [
+    "zmachine"
+   ]
+  },
+  {
+   "id": "gearboy",
+   "name": "Gearboy",
+   "kind": "standalone",
+   "systems": [
+    "gb",
+    "gbc"
+   ]
+  },
+  {
+   "id": "geargrafx",
+   "name": "Geargrafx",
+   "kind": "standalone",
+   "systems": [
+    "pcengine",
+    "pcenginecd",
+    "supergrafx",
+    "tg16",
+    "tg-cd"
+   ]
+  },
+  {
+   "id": "gopher2600",
+   "name": "Gopher2600",
+   "kind": "standalone",
+   "systems": [
+    "atari2600"
+   ]
+  },
+  {
+   "id": "gopher64",
+   "name": "Gopher64",
+   "kind": "standalone",
+   "systems": [
+    "n64"
+   ]
+  },
+  {
+   "id": "groovymame",
+   "name": "GroovyMAME",
+   "kind": "standalone",
+   "systems": [
+    "arcade",
+    "mame"
+   ]
+  },
+  {
+   "id": "hatari",
+   "name": "Hatari",
+   "kind": "standalone",
+   "systems": [
+    "atarist"
+   ]
+  },
+  {
+   "id": "hypseus-singe",
+   "name": "Hypseus",
+   "kind": "standalone",
+   "systems": [
+    "daphne",
+    "laserdisc"
+   ]
+  },
+  {
+   "id": "izapple2",
+   "name": "izapple2",
+   "kind": "standalone",
+   "systems": [
+    "apple2"
+   ]
+  },
+  {
+   "id": "jgenesis",
+   "name": "jgenesis",
+   "kind": "standalone",
+   "systems": [
+    "famicom",
+    "gamegear",
+    "gb",
+    "gbc",
+    "genesis",
+    "mark3",
+    "mastersystem",
+    "megacd",
+    "megacdjp",
+    "megadrive",
+    "megadrivejp",
+    "nes",
+    "segacd",
+    "sfc",
+    "snes",
+    "snesna"
+   ]
+  },
+  {
+   "id": "kegs",
+   "name": "KEGS",
+   "kind": "standalone",
+   "systems": [
+    "apple2gs"
+   ]
+  },
+  {
+   "id": "kronos",
+   "name": "Kronos",
+   "kind": "standalone",
+   "systems": [
+    "saturn",
+    "saturnjp"
+   ]
+  },
+  {
+   "id": "lightspark",
+   "name": "Lightspark",
+   "kind": "standalone",
+   "systems": [
+    "flash"
+   ]
+  },
+  {
+   "id": "lime3ds",
+   "name": "Lime3DS",
+   "kind": "standalone",
+   "systems": [
+    "n3ds"
+   ]
+  },
+  {
+   "id": "linapple",
+   "name": "LinApple",
+   "kind": "standalone",
+   "systems": [
+    "apple2"
+   ]
+  },
+  {
+   "id": "lindbergh-loader",
+   "name": "Lindbergh Loader",
+   "kind": "standalone",
+   "systems": [
+    "arcade",
+    "mame",
+    "pcarcade"
+   ]
+  },
+  {
+   "id": "linux-loader",
+   "name": "Linux Loader",
+   "kind": "standalone",
+   "systems": [
+    "arcade",
+    "mame",
+    "pcarcade"
+   ]
+  },
+  {
+   "id": "m2emulator-windows",
+   "name": "Model 2 Emulator (Wine)",
+   "kind": "standalone",
+   "systems": [
+    "model2"
+   ]
+  },
+  {
+   "id": "mame",
+   "name": "MAME",
+   "kind": "standalone",
+   "systems": [
+    "adam",
+    "amstradcpc",
+    "apple2",
+    "apple2gs",
+    "arcade",
+    "arcadia",
+    "archimedes",
+    "astrocde",
+    "atari7800",
+    "atarijaguar",
+    "bbcmicro",
+    "cdimono1",
+    "channelf",
+    "coco",
+    "consolearcade",
+    "cps",
+    "cps1",
+    "cps2",
+    "cps3",
+    "crvision",
+    "daphne",
+    "dragon32",
+    "electron",
+    "fm7",
+    "fmtowns",
+    "gamate",
+    "gameandwatch",
+    "gamecom",
+    "gmaster",
+    "gx4000",
+    "intellivision",
+    "laserdisc",
+    "lcdgames",
+    "macintosh",
+    "mame",
+    "megaduck",
+    "model2",
+    "model3",
+    "neogeo",
+    "neogeocd",
+    "neogeocdjp",
+    "odyssey2",
+    "oric",
+    "pv1000",
+    "scv",
+    "stv",
+    "supervision",
+    "supracan",
+    "tanodragon",
+    "ti99",
+    "vectrex",
+    "videopac",
+    "vsmile",
+    "x1",
+    "x68000"
+   ]
+  },
+  {
+   "id": "mandarine",
+   "name": "Mandarine",
+   "kind": "standalone",
+   "systems": [
+    "n3ds"
+   ]
+  },
+  {
+   "id": "mednafen",
+   "name": "Mednafen",
+   "kind": "standalone",
+   "systems": [
+    "apple2",
+    "atarilynx",
+    "consolearcade",
+    "famicom",
+    "fds",
+    "gamegear",
+    "gb",
+    "gba",
+    "gbc",
+    "genesis",
+    "mark3",
+    "mastersystem",
+    "megadrive",
+    "megadrivejp",
+    "nes",
+    "ngp",
+    "ngpc",
+    "pcengine",
+    "pcenginecd",
+    "pcfx",
+    "psx",
+    "saturn",
+    "saturnjp",
+    "sfc",
+    "snes",
+    "snesna",
+    "stv",
+    "supergrafx",
+    "tg16",
+    "tg-cd",
+    "virtualboy",
+    "wonderswan",
+    "wonderswancolor"
+   ]
+  },
+  {
+   "id": "melonds",
+   "name": "melonDS",
+   "kind": "standalone",
+   "systems": [
+    "nds"
+   ]
+  },
+  {
+   "id": "mesen",
+   "name": "Mesen",
+   "kind": "standalone",
+   "systems": [
+    "colecovision",
+    "famicom",
+    "fds",
+    "gamegear",
+    "gb",
+    "gba",
+    "gbc",
+    "mark3",
+    "mastersystem",
+    "multivision",
+    "nes",
+    "pcengine",
+    "pcenginecd",
+    "satellaview",
+    "sfc",
+    "sg-1000",
+    "sgb",
+    "snes",
+    "snesna",
+    "supergrafx",
+    "tg16",
+    "tg-cd",
+    "wonderswan",
+    "wonderswancolor"
+   ]
+  },
+  {
+   "id": "mfme-windows",
+   "name": "MFME (Wine)",
+   "kind": "standalone",
+   "systems": [
+    "arcade",
+    "mame"
+   ]
+  },
+  {
+   "id": "mgba",
+   "name": "mGBA",
+   "kind": "standalone",
+   "systems": [
+    "gb",
+    "gba",
+    "gbc",
+    "sgb"
+   ]
+  },
+  {
+   "id": "missingno",
+   "name": "Missingno",
+   "kind": "standalone",
+   "systems": [
+    "atari2600",
+    "gb",
+    "gbc"
+   ]
+  },
+  {
+   "id": "mupen64plus",
+   "name": "Mupen64Plus",
+   "kind": "standalone",
+   "systems": [
+    "n64"
+   ]
+  },
+  {
+   "id": "nestopia-ue",
+   "name": "Nestopia UE",
+   "kind": "standalone",
+   "systems": [
+    "famicom",
+    "fds",
+    "nes"
+   ]
+  },
+  {
+   "id": "noods",
+   "name": "NooDS",
+   "kind": "standalone",
+   "systems": [
+    "gba",
+    "nds"
+   ]
+  },
+  {
+   "id": "openmsx",
+   "name": "openMSX",
+   "kind": "standalone",
+   "systems": [
+    "colecovision",
+    "msx",
+    "msx1",
+    "msx2",
+    "msxturbor"
+   ]
+  },
+  {
+   "id": "oricutron",
+   "name": "Oricutron",
+   "kind": "standalone",
+   "systems": [
+    "oric"
+   ]
+  },
+  {
+   "id": "panda3ds",
+   "name": "Panda3DS",
+   "kind": "standalone",
+   "systems": [
+    "n3ds"
+   ]
+  },
+  {
+   "id": "parallel-launcher",
+   "name": "Parallel Launcher",
+   "kind": "standalone",
+   "systems": [
+    "n64"
+   ]
+  },
+  {
+   "id": "pcsx2",
+   "name": "PCSX2",
+   "kind": "standalone",
+   "systems": [
+    "ps2"
+   ]
+  },
+  {
+   "id": "pcsx2-legacy",
+   "name": "PCSX2 Legacy",
+   "kind": "standalone",
+   "systems": [
+    "ps2"
+   ]
+  },
+  {
+   "id": "pcsx2x6",
+   "name": "PCSX2x6",
+   "kind": "standalone",
+   "systems": [
+    "arcade",
+    "consolearcade",
+    "mame"
+   ]
+  },
+  {
+   "id": "pico-8",
+   "name": "PICO-8",
+   "kind": "standalone",
+   "systems": [
+    "pico8"
+   ]
+  },
+  {
+   "id": "plastic",
+   "name": "Plastic",
+   "kind": "standalone",
+   "systems": [
+    "famicom",
+    "nes"
+   ]
+  },
+  {
+   "id": "ppsspp",
+   "name": "PPSSPP",
+   "kind": "standalone",
+   "systems": [
+    "psp"
+   ]
+  },
+  {
+   "id": "prboom-plus",
+   "name": "PrBoom+",
+   "kind": "standalone",
+   "systems": [
+    "doom"
+   ]
+  },
+  {
+   "id": "primehack",
+   "name": "PrimeHack",
+   "kind": "standalone",
+   "systems": [
+    "gc",
+    "wii"
+   ]
+  },
+  {
+   "id": "punes",
+   "name": "puNES",
+   "kind": "standalone",
+   "systems": [
+    "famicom",
+    "nes"
+   ]
+  },
+  {
+   "id": "quasi88",
+   "name": "QUASI88",
+   "kind": "standalone",
+   "systems": [
+    "pc88"
+   ]
+  },
+  {
+   "id": "ra-81",
+   "name": "EightyOne",
+   "kind": "retroarch",
+   "core": "81",
+   "corename": "81",
+   "systems": [
+    "zx81"
+   ]
+  },
+  {
+   "id": "ra-DoubleCherryGB",
+   "name": "DoubleCherryGB",
+   "kind": "retroarch",
+   "core": "DoubleCherryGB",
+   "corename": "DoubleCherryGB",
+   "systems": [
+    "gb",
+    "gbc"
+   ]
+  },
+  {
+   "id": "ra-a5200",
+   "name": "a5200",
+   "kind": "retroarch",
+   "core": "a5200",
+   "corename": "a5200",
+   "systems": [
+    "atari5200"
+   ]
+  },
+  {
+   "id": "ra-amiarcadia",
+   "name": "AmiArcadia",
+   "kind": "retroarch",
+   "core": "amiarcadia",
+   "corename": "AmiArcadia",
+   "systems": [
+    "arcadia"
+   ]
+  },
+  {
+   "id": "ra-amiberry",
+   "name": "Amiberry",
+   "kind": "retroarch",
+   "core": "amiberry",
+   "corename": "Amiberry",
+   "systems": [
+    "amiga",
+    "amiga1200",
+    "amiga600",
+    "amigacd32",
+    "cdtv"
+   ]
+  },
+  {
+   "id": "ra-applewin",
+   "name": "AppleWin",
+   "kind": "retroarch",
+   "core": "applewin",
+   "corename": "applewin",
+   "systems": [
+    "apple2"
+   ]
+  },
+  {
+   "id": "ra-ardens",
+   "name": "Ardens",
+   "kind": "retroarch",
+   "core": "ardens",
+   "corename": "Ardens",
+   "systems": [
+    "arduboy"
+   ]
+  },
+  {
+   "id": "ra-arduous",
+   "name": "Arduous",
+   "kind": "retroarch",
+   "core": "arduous",
+   "corename": "Arduous",
+   "systems": [
+    "arduboy"
+   ]
+  },
+  {
+   "id": "ra-atari800",
+   "name": "Atari800",
+   "kind": "retroarch",
+   "core": "atari800",
+   "corename": "Atari800",
+   "systems": [
+    "atari5200",
+    "atari800",
+    "atarixe"
+   ]
+  },
+  {
+   "id": "ra-azahar",
+   "name": "Azahar",
+   "kind": "retroarch",
+   "core": "azahar",
+   "corename": "Azahar",
+   "systems": [
+    "n3ds"
+   ]
+  },
+  {
+   "id": "ra-b2",
+   "name": "b2",
+   "kind": "retroarch",
+   "core": "b2",
+   "corename": "b2",
+   "systems": [
+    "bbcmicro"
+   ]
+  },
+  {
+   "id": "ra-blastem",
+   "name": "BlastEm",
+   "kind": "retroarch",
+   "core": "blastem",
+   "corename": "BlastEm",
+   "systems": [
+    "colecovision",
+    "gamegear",
+    "genesis",
+    "mark3",
+    "mastersystem",
+    "megacd",
+    "megacdjp",
+    "megadrive",
+    "megadrivejp",
+    "sega32x",
+    "sega32xjp",
+    "sega32xna",
+    "segacd",
+    "sg-1000"
+   ]
+  },
+  {
+   "id": "ra-bluemsx",
+   "name": "blueMSX",
+   "kind": "retroarch",
+   "core": "bluemsx",
+   "corename": "blueMSX",
+   "systems": [
+    "colecovision",
+    "msx",
+    "msx1",
+    "msx2",
+    "msxturbor",
+    "sg-1000",
+    "spectravideo"
+   ]
+  },
+  {
+   "id": "ra-boom3",
+   "name": "Boom 3",
+   "kind": "retroarch",
+   "core": "boom3",
+   "corename": "boom3",
+   "systems": [
+    "doom"
+   ]
+  },
+  {
+   "id": "ra-boom3_xp",
+   "name": "Boom 3 xp",
+   "kind": "retroarch",
+   "core": "boom3_xp",
+   "corename": null,
+   "systems": [
+    "doom"
+   ]
+  },
+  {
+   "id": "ra-bsnes",
+   "name": "bsnes",
+   "kind": "retroarch",
+   "core": "bsnes",
+   "corename": "bsnes",
+   "systems": [
+    "gb",
+    "gbc",
+    "satellaview",
+    "sfc",
+    "snes",
+    "snesna",
+    "sufami"
+   ]
+  },
+  {
+   "id": "ra-bsnes-jg",
+   "name": "bsnes-jg",
+   "kind": "retroarch",
+   "core": "bsnes-jg",
+   "corename": "bsnes-jg",
+   "systems": [
+    "satellaview",
+    "sfc",
+    "snes",
+    "snesna",
+    "sufami"
+   ]
+  },
+  {
+   "id": "ra-bsnes_hd_beta",
+   "name": "bsnes-hd",
+   "kind": "retroarch",
+   "core": "bsnes_hd_beta",
+   "corename": "bsnes-hd beta",
+   "systems": [
+    "satellaview",
+    "sfc",
+    "snes",
+    "snesna",
+    "sufami"
+   ]
+  },
+  {
+   "id": "ra-bsnes_mercury_accuracy",
+   "name": "bsnes-mercury Accuracy",
+   "kind": "retroarch",
+   "core": "bsnes_mercury_accuracy",
+   "corename": "bsnes-mercury Accuracy",
+   "systems": [
+    "satellaview",
+    "sfc",
+    "snes",
+    "snesna",
+    "sufami"
+   ]
+  },
+  {
+   "id": "ra-cannonball",
+   "name": "CannonBall (OutRun)",
+   "kind": "retroarch",
+   "core": "cannonball",
+   "corename": "Cannonball",
+   "systems": [
+    "ports"
+   ]
+  },
+  {
+   "id": "ra-cap32",
+   "name": "Caprice32",
+   "kind": "retroarch",
+   "core": "cap32",
+   "corename": "Caprice32",
+   "systems": [
+    "amstradcpc",
+    "gx4000"
+   ]
+  },
+  {
+   "id": "ra-cdi2015",
+   "name": "CDi 2015",
+   "kind": "retroarch",
+   "core": "cdi2015",
+   "corename": "Philips CDi 2015",
+   "systems": [
+    "cdimono1"
+   ]
+  },
+  {
+   "id": "ra-cemu",
+   "name": "Cemu",
+   "kind": "retroarch",
+   "core": "cemu",
+   "corename": "Cemu",
+   "systems": [
+    "wiiu"
+   ]
+  },
+  {
+   "id": "ra-chailove",
+   "name": "ChaiLove",
+   "kind": "retroarch",
+   "core": "chailove",
+   "corename": "ChaiLove",
+   "systems": [
+    "chailove"
+   ]
+  },
+  {
+   "id": "ra-citra",
+   "name": "Citra",
+   "kind": "retroarch",
+   "core": "citra",
+   "corename": "Citra",
+   "systems": [
+    "n3ds"
+   ]
+  },
+  {
+   "id": "ra-citra2018",
+   "name": "Citra 2018",
+   "kind": "retroarch",
+   "core": "citra2018",
+   "corename": "Citra 2018",
+   "systems": [
+    "n3ds"
+   ]
+  },
+  {
+   "id": "ra-clownmdemu",
+   "name": "ClownMDEmu",
+   "kind": "retroarch",
+   "core": "clownmdemu",
+   "corename": "ClownMDEmu",
+   "systems": [
+    "genesis",
+    "megacd",
+    "megacdjp",
+    "megadrive",
+    "megadrivejp",
+    "segacd"
+   ]
+  },
+  {
+   "id": "ra-craft",
+   "name": "Craft (Minecraft)",
+   "kind": "retroarch",
+   "core": "craft",
+   "corename": "Craft",
+   "systems": [
+    "ports"
+   ]
+  },
+  {
+   "id": "ra-crocods",
+   "name": "CrocoDS",
+   "kind": "retroarch",
+   "core": "crocods",
+   "corename": "CrocoDS",
+   "systems": [
+    "amstradcpc",
+    "gx4000"
+   ]
+  },
+  {
+   "id": "ra-desmume",
+   "name": "DeSmuME",
+   "kind": "retroarch",
+   "core": "desmume",
+   "corename": "DeSmuME",
+   "systems": [
+    "nds"
+   ]
+  },
+  {
+   "id": "ra-desmume2015",
+   "name": "DeSmuME 2015",
+   "kind": "retroarch",
+   "core": "desmume2015",
+   "corename": "DeSmuME 2015",
+   "systems": [
+    "nds"
+   ]
+  },
+  {
+   "id": "ra-dice",
+   "name": "DICE",
+   "kind": "retroarch",
+   "core": "dice",
+   "corename": "DICE",
+   "systems": [
+    "arcade",
+    "mame"
+   ]
+  },
+  {
+   "id": "ra-dirksimple",
+   "name": "DirkSimple",
+   "kind": "retroarch",
+   "core": "dirksimple",
+   "corename": "DirkSimple",
+   "systems": [
+    "daphne",
+    "laserdisc"
+   ]
+  },
+  {
+   "id": "ra-dolphin",
+   "name": "Dolphin",
+   "kind": "retroarch",
+   "core": "dolphin",
+   "corename": "Dolphin",
+   "systems": [
+    "consolearcade",
+    "gc",
+    "triforce",
+    "wii"
+   ]
+  },
+  {
+   "id": "ra-dosbox_core",
+   "name": "DOSBox-Core",
+   "kind": "retroarch",
+   "core": "dosbox_core",
+   "corename": "DOSBox-core",
+   "systems": [
+    "dos",
+    "pc"
+   ]
+  },
+  {
+   "id": "ra-dosbox_pure",
+   "name": "DOSBox-Pure",
+   "kind": "retroarch",
+   "core": "dosbox_pure",
+   "corename": "DOSBox-pure",
+   "systems": [
+    "dos",
+    "pc",
+    "windows3x",
+    "windows9x"
+   ]
+  },
+  {
+   "id": "ra-dosbox_svn",
+   "name": "DOSBox-SVN",
+   "kind": "retroarch",
+   "core": "dosbox_svn",
+   "corename": "DOSBox-SVN",
+   "systems": [
+    "dos",
+    "pc"
+   ]
+  },
+  {
+   "id": "ra-doukutsu_rs",
+   "name": "drs (Cave Story)",
+   "kind": "retroarch",
+   "core": "doukutsu_rs",
+   "corename": "doukutsu-rs",
+   "systems": [
+    "ports"
+   ]
+  },
+  {
+   "id": "ra-easyrpg",
+   "name": "EasyRPG",
+   "kind": "retroarch",
+   "core": "easyrpg",
+   "corename": "EasyRPG Player",
+   "systems": [
+    "easyrpg"
+   ]
+  },
+  {
+   "id": "ra-ecwolf",
+   "name": "ECWolf (Wolfenstein 3D)",
+   "kind": "retroarch",
+   "core": "ecwolf",
+   "corename": "ECWolf",
+   "systems": [
+    "ports"
+   ]
+  },
+  {
+   "id": "ra-fbalpha2012",
+   "name": "FB Alpha 2012",
+   "kind": "retroarch",
+   "core": "fbalpha2012",
+   "corename": "FB Alpha 2012",
+   "systems": [
+    "arcade",
+    "cps",
+    "cps1",
+    "cps2",
+    "cps3",
+    "fba",
+    "mame"
+   ]
+  },
+  {
+   "id": "ra-fbalpha2012_cps1",
+   "name": "FB Alpha 2012 CPS-1",
+   "kind": "retroarch",
+   "core": "fbalpha2012_cps1",
+   "corename": "FB Alpha 2012 CPS-1",
+   "systems": [
+    "cps",
+    "cps1",
+    "fba"
+   ]
+  },
+  {
+   "id": "ra-fbalpha2012_cps2",
+   "name": "FB Alpha 2012 CPS-2",
+   "kind": "retroarch",
+   "core": "fbalpha2012_cps2",
+   "corename": "FB Alpha 2012 CPS-2",
+   "systems": [
+    "cps",
+    "cps2",
+    "fba"
+   ]
+  },
+  {
+   "id": "ra-fbalpha2012_cps3",
+   "name": "FB Alpha 2012 CPS-3",
+   "kind": "retroarch",
+   "core": "fbalpha2012_cps3",
+   "corename": "FB Alpha 2012 CPS-3",
+   "systems": [
+    "cps",
+    "cps3",
+    "fba"
+   ]
+  },
+  {
+   "id": "ra-fbalpha2012_neogeo",
+   "name": "FB Alpha 2012 Neo Geo",
+   "kind": "retroarch",
+   "core": "fbalpha2012_neogeo",
+   "corename": "FB Alpha 2012 Neo Geo",
+   "systems": [
+    "fba"
+   ]
+  },
+  {
+   "id": "ra-fbneo",
+   "name": "FinalBurn Neo",
+   "kind": "retroarch",
+   "core": "fbneo",
+   "corename": "FinalBurn Neo",
+   "systems": [
+    "arcade",
+    "cps",
+    "cps1",
+    "cps2",
+    "cps3",
+    "fbneo",
+    "mame",
+    "neogeo",
+    "neogeocd",
+    "neogeocdjp"
+   ]
+  },
+  {
+   "id": "ra-fceumm",
+   "name": "FCEUmm",
+   "kind": "retroarch",
+   "core": "fceumm",
+   "corename": "FCEUmm",
+   "systems": [
+    "famicom",
+    "fds",
+    "nes"
+   ]
+  },
+  {
+   "id": "ra-flycast",
+   "name": "Flycast",
+   "kind": "retroarch",
+   "core": "flycast",
+   "corename": "Flycast",
+   "systems": [
+    "arcade",
+    "atomiswave",
+    "consolearcade",
+    "dreamcast",
+    "mame",
+    "naomi",
+    "naomi2",
+    "naomigd"
+   ]
+  },
+  {
+   "id": "ra-fmsx",
+   "name": "fMSX",
+   "kind": "retroarch",
+   "core": "fmsx",
+   "corename": "fMSX",
+   "systems": [
+    "msx",
+    "msx1",
+    "msx2"
+   ]
+  },
+  {
+   "id": "ra-freechaf",
+   "name": "FreeChaF",
+   "kind": "retroarch",
+   "core": "freechaf",
+   "corename": "FreeChaF",
+   "systems": [
+    "channelf"
+   ]
+  },
+  {
+   "id": "ra-freeintv",
+   "name": "FreeIntv",
+   "kind": "retroarch",
+   "core": "freeintv",
+   "corename": "FreeIntv",
+   "systems": [
+    "intellivision"
+   ]
+  },
+  {
+   "id": "ra-frodo",
+   "name": "Frodo",
+   "kind": "retroarch",
+   "core": "frodo",
+   "corename": "Frodo",
+   "systems": [
+    "c64"
+   ]
+  },
+  {
+   "id": "ra-fsuae",
+   "name": "FS-UAE",
+   "kind": "retroarch",
+   "core": "fsuae",
+   "corename": "FS-UAE",
+   "systems": [
+    "amiga",
+    "amiga1200",
+    "amiga600"
+   ]
+  },
+  {
+   "id": "ra-fuse",
+   "name": "Fuse",
+   "kind": "retroarch",
+   "core": "fuse",
+   "corename": "Fuse",
+   "systems": [
+    "zxspectrum"
+   ]
+  },
+  {
+   "id": "ra-gambatte",
+   "name": "Gambatte",
+   "kind": "retroarch",
+   "core": "gambatte",
+   "corename": "Gambatte",
+   "systems": [
+    "gb",
+    "gbc"
+   ]
+  },
+  {
+   "id": "ra-gearboy",
+   "name": "Gearboy",
+   "kind": "retroarch",
+   "core": "gearboy",
+   "corename": "Gearboy",
+   "systems": [
+    "gb",
+    "gbc"
+   ]
+  },
+  {
+   "id": "ra-gearcoleco",
+   "name": "Gearcoleco",
+   "kind": "retroarch",
+   "core": "gearcoleco",
+   "corename": "Gearcoleco",
+   "systems": [
+    "colecovision"
+   ]
+  },
+  {
+   "id": "ra-geargrafx",
+   "name": "Geargrafx",
+   "kind": "retroarch",
+   "core": "geargrafx",
+   "corename": "Geargrafx",
+   "systems": [
+    "pcengine",
+    "pcenginecd",
+    "supergrafx",
+    "tg16",
+    "tg-cd"
+   ]
+  },
+  {
+   "id": "ra-gearlynx",
+   "name": "Gearlynx",
+   "kind": "retroarch",
+   "core": "gearlynx",
+   "corename": "Gearlynx",
+   "systems": [
+    "atarilynx"
+   ]
+  },
+  {
+   "id": "ra-gearsystem",
+   "name": "Gearsystem",
+   "kind": "retroarch",
+   "core": "gearsystem",
+   "corename": "Gearsystem",
+   "systems": [
+    "gamegear",
+    "mark3",
+    "mastersystem",
+    "multivision",
+    "sg-1000"
+   ]
+  },
+  {
+   "id": "ra-genesis_plus_gx",
+   "name": "Genesis Plus GX",
+   "kind": "retroarch",
+   "core": "genesis_plus_gx",
+   "corename": "Genesis Plus GX",
+   "systems": [
+    "gamegear",
+    "genesis",
+    "mark3",
+    "mastersystem",
+    "megacd",
+    "megacdjp",
+    "megadrive",
+    "megadrivejp",
+    "segacd",
+    "sg-1000"
+   ]
+  },
+  {
+   "id": "ra-genesis_plus_gx_wide",
+   "name": "Genesis Plus GX Wide",
+   "kind": "retroarch",
+   "core": "genesis_plus_gx_wide",
+   "corename": "Genesis Plus GX Wide",
+   "systems": [
+    "gamegear",
+    "genesis",
+    "mark3",
+    "mastersystem",
+    "megacd",
+    "megacdjp",
+    "megadrive",
+    "megadrivejp",
+    "segacd",
+    "sg-1000"
+   ]
+  },
+  {
+   "id": "ra-geolith",
+   "name": "Geolith",
+   "kind": "retroarch",
+   "core": "geolith",
+   "corename": "Geolith",
+   "systems": [
+    "arcade",
+    "mame",
+    "neogeo",
+    "neogeocd",
+    "neogeocdjp"
+   ]
+  },
+  {
+   "id": "ra-gpsp",
+   "name": "gpSP",
+   "kind": "retroarch",
+   "core": "gpsp",
+   "corename": "gpSP",
+   "systems": [
+    "gba"
+   ]
+  },
+  {
+   "id": "ra-gw",
+   "name": "Handheld Electronic (GW)",
+   "kind": "retroarch",
+   "core": "gw",
+   "corename": "GW",
+   "systems": [
+    "gameandwatch",
+    "lcdgames"
+   ]
+  },
+  {
+   "id": "ra-handy",
+   "name": "Handy",
+   "kind": "retroarch",
+   "core": "handy",
+   "corename": "Handy",
+   "systems": [
+    "atarilynx"
+   ]
+  },
+  {
+   "id": "ra-hatari",
+   "name": "Hatari",
+   "kind": "retroarch",
+   "core": "hatari",
+   "corename": "hatari",
+   "systems": [
+    "atarist"
+   ]
+  },
+  {
+   "id": "ra-hatari2014",
+   "name": "Hatari 2014",
+   "kind": "retroarch",
+   "core": "hatari2014",
+   "corename": "Hatari2014",
+   "systems": [
+    "atarist"
+   ]
+  },
+  {
+   "id": "ra-hbmame",
+   "name": "HBMAME",
+   "kind": "retroarch",
+   "core": "hbmame",
+   "corename": "HBMAME (Git)",
+   "systems": [
+    "arcade",
+    "mame"
+   ]
+  },
+  {
+   "id": "ra-holani",
+   "name": "Holani",
+   "kind": "retroarch",
+   "core": "holani",
+   "corename": "Holani",
+   "systems": [
+    "atarilynx"
+   ]
+  },
+  {
+   "id": "ra-irogb",
+   "name": "IroGB",
+   "kind": "retroarch",
+   "core": "irogb",
+   "corename": "IroGB",
+   "systems": [
+    "gb",
+    "gbc"
+   ]
+  },
+  {
+   "id": "ra-jollycv",
+   "name": "JollyCV",
+   "kind": "retroarch",
+   "core": "jollycv",
+   "corename": "JollyCV",
+   "systems": [
+    "colecovision",
+    "crvision"
+   ]
+  },
+  {
+   "id": "ra-kronos",
+   "name": "Kronos",
+   "kind": "retroarch",
+   "core": "kronos",
+   "corename": "Kronos",
+   "systems": [
+    "arcade",
+    "consolearcade",
+    "mame",
+    "saturn",
+    "saturnjp",
+    "stv"
+   ]
+  },
+  {
+   "id": "ra-lowresnx",
+   "name": "LowRes NX",
+   "kind": "retroarch",
+   "core": "lowresnx",
+   "corename": "lowresnx",
+   "systems": [
+    "lowresnx"
+   ]
+  },
+  {
+   "id": "ra-lutro",
+   "name": "Lutro",
+   "kind": "retroarch",
+   "core": "lutro",
+   "corename": "Lutro",
+   "systems": [
+    "lutro"
+   ]
+  },
+  {
+   "id": "ra-mame",
+   "name": "MAME - Current",
+   "kind": "retroarch",
+   "core": "mame",
+   "corename": "MAME",
+   "systems": [
+    "apple2",
+    "apple2gs",
+    "arcade",
+    "arcadia",
+    "astrocde",
+    "atari7800",
+    "channelf",
+    "consolearcade",
+    "cps",
+    "cps1",
+    "cps2",
+    "cps3",
+    "crvision",
+    "daphne",
+    "fmtowns",
+    "gamate",
+    "gameandwatch",
+    "gamecom",
+    "gmaster",
+    "intellivision",
+    "laserdisc",
+    "lcdgames",
+    "mame",
+    "megaduck",
+    "model2",
+    "model3",
+    "neogeo",
+    "odyssey2",
+    "pv1000",
+    "scv",
+    "stv",
+    "supervision",
+    "supracan",
+    "vectrex",
+    "videopac",
+    "vsmile"
+   ]
+  },
+  {
+   "id": "ra-mame2000",
+   "name": "MAME 2000",
+   "kind": "retroarch",
+   "core": "mame2000",
+   "corename": "MAME 2000 (0.37b5)",
+   "systems": [
+    "arcade",
+    "cps",
+    "cps1",
+    "cps2",
+    "cps3",
+    "mame"
+   ]
+  },
+  {
+   "id": "ra-mame2003",
+   "name": "MAME 2003",
+   "kind": "retroarch",
+   "core": "mame2003",
+   "corename": "MAME 2003 (0.78)",
+   "systems": [
+    "arcade",
+    "cps",
+    "cps1",
+    "cps2",
+    "cps3",
+    "mame"
+   ]
+  },
+  {
+   "id": "ra-mame2003_plus",
+   "name": "MAME 2003-Plus",
+   "kind": "retroarch",
+   "core": "mame2003_plus",
+   "corename": "MAME 2003-Plus",
+   "systems": [
+    "arcade",
+    "cps",
+    "cps1",
+    "cps2",
+    "cps3",
+    "mame"
+   ]
+  },
+  {
+   "id": "ra-mame2010",
+   "name": "MAME 2010",
+   "kind": "retroarch",
+   "core": "mame2010",
+   "corename": "MAME 2010 (0.139)",
+   "systems": [
+    "arcade",
+    "cps",
+    "cps1",
+    "cps2",
+    "cps3",
+    "mame"
+   ]
+  },
+  {
+   "id": "ra-mednafen_lynx",
+   "name": "Beetle Lynx",
+   "kind": "retroarch",
+   "core": "mednafen_lynx",
+   "corename": "Beetle Lynx",
+   "systems": [
+    "atarilynx"
+   ]
+  },
+  {
+   "id": "ra-mednafen_ngp",
+   "name": "Beetle NeoPop",
+   "kind": "retroarch",
+   "core": "mednafen_ngp",
+   "corename": "Beetle NeoPop",
+   "systems": [
+    "ngp",
+    "ngpc"
+   ]
+  },
+  {
+   "id": "ra-mednafen_pce",
+   "name": "Beetle PCE",
+   "kind": "retroarch",
+   "core": "mednafen_pce",
+   "corename": "Beetle PCE",
+   "systems": [
+    "pcengine",
+    "pcenginecd",
+    "supergrafx",
+    "tg16",
+    "tg-cd"
+   ]
+  },
+  {
+   "id": "ra-mednafen_pce_fast",
+   "name": "Beetle PCE FAST",
+   "kind": "retroarch",
+   "core": "mednafen_pce_fast",
+   "corename": "Beetle PCE Fast",
+   "systems": [
+    "pcengine",
+    "pcenginecd",
+    "tg16",
+    "tg-cd"
+   ]
+  },
+  {
+   "id": "ra-mednafen_pcfx",
+   "name": "Beetle PC-FX",
+   "kind": "retroarch",
+   "core": "mednafen_pcfx",
+   "corename": "Beetle PC-FX",
+   "systems": [
+    "pcfx"
+   ]
+  },
+  {
+   "id": "ra-mednafen_psx",
+   "name": "Beetle PSX",
+   "kind": "retroarch",
+   "core": "mednafen_psx",
+   "corename": "Beetle PSX",
+   "systems": [
+    "psx"
+   ]
+  },
+  {
+   "id": "ra-mednafen_psx_hw",
+   "name": "Beetle PSX HW",
+   "kind": "retroarch",
+   "core": "mednafen_psx_hw",
+   "corename": "Beetle PSX HW",
+   "systems": [
+    "psx"
+   ]
+  },
+  {
+   "id": "ra-mednafen_saturn",
+   "name": "Beetle Saturn",
+   "kind": "retroarch",
+   "core": "mednafen_saturn",
+   "corename": "Beetle Saturn",
+   "systems": [
+    "saturn",
+    "saturnjp"
+   ]
+  },
+  {
+   "id": "ra-mednafen_supafaust",
+   "name": "Beetle Supafaust",
+   "kind": "retroarch",
+   "core": "mednafen_supafaust",
+   "corename": "Beetle Supafaust",
+   "systems": [
+    "sfc",
+    "snes",
+    "snesna"
+   ]
+  },
+  {
+   "id": "ra-mednafen_supergrafx",
+   "name": "Beetle SuperGrafx",
+   "kind": "retroarch",
+   "core": "mednafen_supergrafx",
+   "corename": "Beetle SuperGrafx",
+   "systems": [
+    "pcengine",
+    "pcenginecd",
+    "supergrafx",
+    "tg16",
+    "tg-cd"
+   ]
+  },
+  {
+   "id": "ra-mednafen_vb",
+   "name": "Beetle VB",
+   "kind": "retroarch",
+   "core": "mednafen_vb",
+   "corename": "Beetle VB",
+   "systems": [
+    "virtualboy"
+   ]
+  },
+  {
+   "id": "ra-mednafen_wswan",
+   "name": "Beetle Cygne",
+   "kind": "retroarch",
+   "core": "mednafen_wswan",
+   "corename": "Beetle WonderSwan",
+   "systems": [
+    "wonderswan",
+    "wonderswancolor"
+   ]
+  },
+  {
+   "id": "ra-melonds",
+   "name": "melonDS",
+   "kind": "retroarch",
+   "core": "melonds",
+   "corename": "melonDS",
+   "systems": [
+    "nds"
+   ]
+  },
+  {
+   "id": "ra-melondsds",
+   "name": "melonDS DS",
+   "kind": "retroarch",
+   "core": "melondsds",
+   "corename": "melonDS DS",
+   "systems": [
+    "nds"
+   ]
+  },
+  {
+   "id": "ra-mesen",
+   "name": "Mesen",
+   "kind": "retroarch",
+   "core": "mesen",
+   "corename": "Mesen",
+   "systems": [
+    "famicom",
+    "fds",
+    "nes"
+   ]
+  },
+  {
+   "id": "ra-mesen-s",
+   "name": "Mesen-S",
+   "kind": "retroarch",
+   "core": "mesen-s",
+   "corename": "Mesen-S",
+   "systems": [
+    "gb",
+    "gbc",
+    "satellaview",
+    "sfc",
+    "sgb",
+    "snes",
+    "snesna"
+   ]
+  },
+  {
+   "id": "ra-mesen2",
+   "name": "MesenCE",
+   "kind": "retroarch",
+   "core": "mesen2",
+   "corename": "MesenCE",
+   "systems": [
+    "famicom",
+    "fds",
+    "gamegear",
+    "gb",
+    "gba",
+    "gbc",
+    "mark3",
+    "mastersystem",
+    "nes",
+    "pcengine",
+    "pcenginecd",
+    "satellaview",
+    "sfc",
+    "sgb",
+    "snes",
+    "snesna",
+    "supergrafx",
+    "tg16",
+    "tg-cd",
+    "wonderswan",
+    "wonderswancolor"
+   ]
+  },
+  {
+   "id": "ra-mess2015",
+   "name": "MESS 2015",
+   "kind": "retroarch",
+   "core": "mess2015",
+   "corename": "MESS 2015 (0.160)",
+   "systems": [
+    "mess"
+   ]
+  },
+  {
+   "id": "ra-mgba",
+   "name": "mGBA",
+   "kind": "retroarch",
+   "core": "mgba",
+   "corename": "mGBA",
+   "systems": [
+    "gb",
+    "gba",
+    "gbc",
+    "sgb"
+   ]
+  },
+  {
+   "id": "ra-minivmac",
+   "name": "Mini vMac",
+   "kind": "retroarch",
+   "core": "minivmac",
+   "corename": "MinivmacII",
+   "systems": [
+    "macintosh"
+   ]
+  },
+  {
+   "id": "ra-mojozork",
+   "name": "MojoZork",
+   "kind": "retroarch",
+   "core": "mojozork",
+   "corename": "mojozork",
+   "systems": [
+    "zmachine"
+   ]
+  },
+  {
+   "id": "ra-mrboom",
+   "name": "Mr.Boom (Bomberman)",
+   "kind": "retroarch",
+   "core": "mrboom",
+   "corename": "Mr.Boom",
+   "systems": [
+    "ports"
+   ]
+  },
+  {
+   "id": "ra-mu",
+   "name": "Mu",
+   "kind": "retroarch",
+   "core": "mu",
+   "corename": "Mu",
+   "systems": [
+    "palm"
+   ]
+  },
+  {
+   "id": "ra-mupen64plus_next",
+   "name": "Mupen64Plus-Next",
+   "kind": "retroarch",
+   "core": "mupen64plus_next",
+   "corename": "Mupen64Plus-Next",
+   "systems": [
+    "n64",
+    "n64dd"
+   ]
+  },
+  {
+   "id": "ra-nekop2",
+   "name": "Neko Project II",
+   "kind": "retroarch",
+   "core": "nekop2",
+   "corename": "Neko Project II",
+   "systems": [
+    "pc98"
+   ]
+  },
+  {
+   "id": "ra-neocd",
+   "name": "NeoCD",
+   "kind": "retroarch",
+   "core": "neocd",
+   "corename": "NeoCD",
+   "systems": [
+    "neogeocd",
+    "neogeocdjp"
+   ]
+  },
+  {
+   "id": "ra-nestopia",
+   "name": "Nestopia UE",
+   "kind": "retroarch",
+   "core": "nestopia",
+   "corename": "Nestopia",
+   "systems": [
+    "famicom",
+    "fds",
+    "nes"
+   ]
+  },
+  {
+   "id": "ra-noods",
+   "name": "NooDS",
+   "kind": "retroarch",
+   "core": "noods",
+   "corename": "NooDS",
+   "systems": [
+    "gba",
+    "nds"
+   ]
+  },
+  {
+   "id": "ra-np2kai",
+   "name": "Neko Project II Kai",
+   "kind": "retroarch",
+   "core": "np2kai",
+   "corename": "Neko Project II Kai",
+   "systems": [
+    "pc98"
+   ]
+  },
+  {
+   "id": "ra-nxengine",
+   "name": "NXEngine (Cave Story)",
+   "kind": "retroarch",
+   "core": "nxengine",
+   "corename": "NXEngine",
+   "systems": [
+    "ports"
+   ]
+  },
+  {
+   "id": "ra-o2em",
+   "name": "O2EM",
+   "kind": "retroarch",
+   "core": "o2em",
+   "corename": "O2EM",
+   "systems": [
+    "odyssey2",
+    "videopac"
+   ]
+  },
+  {
+   "id": "ra-openlara",
+   "name": "OpenLara (Tomb Raider)",
+   "kind": "retroarch",
+   "core": "openlara",
+   "corename": "OpenLara",
+   "systems": [
+    "ports"
+   ]
+  },
+  {
+   "id": "ra-opera",
+   "name": "Opera",
+   "kind": "retroarch",
+   "core": "opera",
+   "corename": "Opera",
+   "systems": [
+    "3do"
+   ]
+  },
+  {
+   "id": "ra-parallel_n64",
+   "name": "ParaLLEl N64",
+   "kind": "retroarch",
+   "core": "parallel_n64",
+   "corename": "ParaLLEl N64",
+   "systems": [
+    "n64",
+    "n64dd"
+   ]
+  },
+  {
+   "id": "ra-pcee2",
+   "name": "PCEE2",
+   "kind": "retroarch",
+   "core": "pcee2",
+   "corename": "PCEE2",
+   "systems": [
+    "ps2"
+   ]
+  },
+  {
+   "id": "ra-pcsx2",
+   "name": "LRPS2",
+   "kind": "retroarch",
+   "core": "pcsx2",
+   "corename": "LRPS2",
+   "systems": [
+    "ps2"
+   ]
+  },
+  {
+   "id": "ra-pcsx_rearmed",
+   "name": "PCSX ReARMed",
+   "kind": "retroarch",
+   "core": "pcsx_rearmed",
+   "corename": "PCSX-ReARMed",
+   "systems": [
+    "psx"
+   ]
+  },
+  {
+   "id": "ra-picodrive",
+   "name": "PicoDrive",
+   "kind": "retroarch",
+   "core": "picodrive",
+   "corename": "PicoDrive",
+   "systems": [
+    "gamegear",
+    "genesis",
+    "mark3",
+    "mastersystem",
+    "megacd",
+    "megacdjp",
+    "megadrive",
+    "megadrivejp",
+    "sega32x",
+    "sega32xjp",
+    "sega32xna",
+    "segacd"
+   ]
+  },
+  {
+   "id": "ra-pokemini",
+   "name": "PokeMini",
+   "kind": "retroarch",
+   "core": "pokemini",
+   "corename": "PokeMini",
+   "systems": [
+    "pokemini"
+   ]
+  },
+  {
+   "id": "ra-potator",
+   "name": "Potator",
+   "kind": "retroarch",
+   "core": "potator",
+   "corename": "Potator",
+   "systems": [
+    "supervision"
+   ]
+  },
+  {
+   "id": "ra-ppsspp",
+   "name": "PPSSPP",
+   "kind": "retroarch",
+   "core": "ppsspp",
+   "corename": "PPSSPP",
+   "systems": [
+    "psp"
+   ]
+  },
+  {
+   "id": "ra-prboom",
+   "name": "PrBoom",
+   "kind": "retroarch",
+   "core": "prboom",
+   "corename": "PrBoom",
+   "systems": [
+    "doom"
+   ]
+  },
+  {
+   "id": "ra-prosystem",
+   "name": "ProSystem",
+   "kind": "retroarch",
+   "core": "prosystem",
+   "corename": "ProSystem",
+   "systems": [
+    "atari7800"
+   ]
+  },
+  {
+   "id": "ra-puae",
+   "name": "PUAE",
+   "kind": "retroarch",
+   "core": "puae",
+   "corename": "PUAE",
+   "systems": [
+    "amiga",
+    "amiga1200",
+    "amiga600",
+    "amigacd32",
+    "cdtv"
+   ]
+  },
+  {
+   "id": "ra-puae2021",
+   "name": "PUAE 2021",
+   "kind": "retroarch",
+   "core": "puae2021",
+   "corename": "PUAE 2021",
+   "systems": [
+    "amiga",
+    "amiga1200",
+    "amiga600",
+    "amigacd32",
+    "cdtv"
+   ]
+  },
+  {
+   "id": "ra-px68k",
+   "name": "PX68k",
+   "kind": "retroarch",
+   "core": "px68k",
+   "corename": "PX68k",
+   "systems": [
+    "x68000"
+   ]
+  },
+  {
+   "id": "ra-quasi88",
+   "name": "QUASI88",
+   "kind": "retroarch",
+   "core": "quasi88",
+   "corename": "QUASI88",
+   "systems": [
+    "pc88"
+   ]
+  },
+  {
+   "id": "ra-quicknes",
+   "name": "QuickNES",
+   "kind": "retroarch",
+   "core": "quicknes",
+   "corename": "QuickNES",
+   "systems": [
+    "famicom",
+    "nes"
+   ]
+  },
+  {
+   "id": "ra-race",
+   "name": "RACE",
+   "kind": "retroarch",
+   "core": "race",
+   "corename": "RACE",
+   "systems": [
+    "ngp",
+    "ngpc"
+   ]
+  },
+  {
+   "id": "ra-retro8",
+   "name": "Retro8",
+   "kind": "retroarch",
+   "core": "retro8",
+   "corename": "Retro8",
+   "systems": [
+    "pico8"
+   ]
+  },
+  {
+   "id": "ra-rustynes",
+   "name": "RustyNES",
+   "kind": "retroarch",
+   "core": "rustynes",
+   "corename": "RustyNES",
+   "systems": [
+    "famicom",
+    "fds",
+    "nes"
+   ]
+  },
+  {
+   "id": "ra-same_cdi",
+   "name": "SAME CDi",
+   "kind": "retroarch",
+   "core": "same_cdi",
+   "corename": "SAME CDi (Git)",
+   "systems": [
+    "cdimono1"
+   ]
+  },
+  {
+   "id": "ra-sameboy",
+   "name": "SameBoy",
+   "kind": "retroarch",
+   "core": "sameboy",
+   "corename": "SameBoy",
+   "systems": [
+    "gb",
+    "gbc",
+    "sgb"
+   ]
+  },
+  {
+   "id": "ra-sameduck",
+   "name": "SameDuck",
+   "kind": "retroarch",
+   "core": "sameduck",
+   "corename": "SameDuck",
+   "systems": [
+    "megaduck"
+   ]
+  },
+  {
+   "id": "ra-scummvm",
+   "name": "ScummVM",
+   "kind": "retroarch",
+   "core": "scummvm",
+   "corename": "ScummVM",
+   "systems": [
+    "scummvm"
+   ]
+  },
+  {
+   "id": "ra-skyemu",
+   "name": "SkyEmu",
+   "kind": "retroarch",
+   "core": "skyemu",
+   "corename": "SkyEmu",
+   "systems": [
+    "gb",
+    "gba",
+    "gbc",
+    "nds"
+   ]
+  },
+  {
+   "id": "ra-smsplus",
+   "name": "SMS Plus GX",
+   "kind": "retroarch",
+   "core": "smsplus",
+   "corename": "SMS Plus GX",
+   "systems": [
+    "gamegear",
+    "mark3",
+    "mastersystem"
+   ]
+  },
+  {
+   "id": "ra-snes9x",
+   "name": "Snes9x - Current",
+   "kind": "retroarch",
+   "core": "snes9x",
+   "corename": "Snes9x",
+   "systems": [
+    "satellaview",
+    "sfc",
+    "snes",
+    "snesna",
+    "sufami"
+   ]
+  },
+  {
+   "id": "ra-snes9x2005_plus",
+   "name": "Snes9x 2005 Plus",
+   "kind": "retroarch",
+   "core": "snes9x2005_plus",
+   "corename": "Snes9x 2005 Plus",
+   "systems": [
+    "satellaview",
+    "sfc",
+    "snes",
+    "snesna",
+    "sufami"
+   ]
+  },
+  {
+   "id": "ra-snes9x2010",
+   "name": "Snes9x 2010",
+   "kind": "retroarch",
+   "core": "snes9x2010",
+   "corename": "Snes9x 2010",
+   "systems": [
+    "satellaview",
+    "sfc",
+    "snes",
+    "snesna",
+    "sufami"
+   ]
+  },
+  {
+   "id": "ra-squirreljme",
+   "name": "SquirrelJME",
+   "kind": "retroarch",
+   "core": "squirreljme",
+   "corename": "SquirrelJME",
+   "systems": [
+    "j2me"
+   ]
+  },
+  {
+   "id": "ra-stella",
+   "name": "Stella",
+   "kind": "retroarch",
+   "core": "stella",
+   "corename": "Stella",
+   "systems": [
+    "atari2600"
+   ]
+  },
+  {
+   "id": "ra-stella2014",
+   "name": "Stella 2014",
+   "kind": "retroarch",
+   "core": "stella2014",
+   "corename": "Stella 2014",
+   "systems": [
+    "atari2600"
+   ]
+  },
+  {
+   "id": "ra-stella2023",
+   "name": "Stella 2023",
+   "kind": "retroarch",
+   "core": "stella2023",
+   "corename": "Stella 2023",
+   "systems": [
+    "atari2600"
+   ]
+  },
+  {
+   "id": "ra-superbroswar",
+   "name": "Super Bros War",
+   "kind": "retroarch",
+   "core": "superbroswar",
+   "corename": "superbroswar",
+   "systems": [
+    "ports"
+   ]
+  },
+  {
+   "id": "ra-supermodel",
+   "name": "Supermodel",
+   "kind": "retroarch",
+   "core": "supermodel",
+   "corename": "Supermodel",
+   "systems": [
+    "arcade",
+    "mame",
+    "model3"
+   ]
+  },
+  {
+   "id": "ra-swanstation",
+   "name": "SwanStation",
+   "kind": "retroarch",
+   "core": "swanstation",
+   "corename": "SwanStation",
+   "systems": [
+    "psx"
+   ]
+  },
+  {
+   "id": "ra-tgbdual",
+   "name": "TGB Dual",
+   "kind": "retroarch",
+   "core": "tgbdual",
+   "corename": "TGB Dual",
+   "systems": [
+    "gb",
+    "gbc"
+   ]
+  },
+  {
+   "id": "ra-theodore",
+   "name": "Theodore",
+   "kind": "retroarch",
+   "core": "theodore",
+   "corename": "theodore",
+   "systems": [
+    "moto",
+    "to8"
+   ]
+  },
+  {
+   "id": "ra-tia",
+   "name": "Tia",
+   "kind": "retroarch",
+   "core": "tia",
+   "corename": "Tia",
+   "systems": [
+    "atari2600"
+   ]
+  },
+  {
+   "id": "ra-tic80",
+   "name": "TIC-80",
+   "kind": "retroarch",
+   "core": "tic80",
+   "corename": "TIC-80",
+   "systems": [
+    "tic80"
+   ]
+  },
+  {
+   "id": "ra-tyrquake",
+   "name": "TyrQuake",
+   "kind": "retroarch",
+   "core": "tyrquake",
+   "corename": "TyrQuake",
+   "systems": [
+    "quake"
+   ]
+  },
+  {
+   "id": "ra-uzem",
+   "name": "Uzem",
+   "kind": "retroarch",
+   "core": "uzem",
+   "corename": "uzem",
+   "systems": [
+    "uzebox"
+   ]
+  },
+  {
+   "id": "ra-vba_next",
+   "name": "VBA Next",
+   "kind": "retroarch",
+   "core": "vba_next",
+   "corename": "VBA Next",
+   "systems": [
+    "gba"
+   ]
+  },
+  {
+   "id": "ra-vbam",
+   "name": "VBA-M",
+   "kind": "retroarch",
+   "core": "vbam",
+   "corename": "VBA-M",
+   "systems": [
+    "gb",
+    "gba",
+    "gbc"
+   ]
+  },
+  {
+   "id": "ra-vecx",
+   "name": "vecx",
+   "kind": "retroarch",
+   "core": "vecx",
+   "corename": "vecx",
+   "systems": [
+    "vectrex"
+   ]
+  },
+  {
+   "id": "ra-vice_x128",
+   "name": "VICE x128",
+   "kind": "retroarch",
+   "core": "vice_x128",
+   "corename": "VICE x128",
+   "systems": [
+    "c64"
+   ]
+  },
+  {
+   "id": "ra-vice_x64",
+   "name": "VICE x64 Fast",
+   "kind": "retroarch",
+   "core": "vice_x64",
+   "corename": "VICE x64",
+   "systems": [
+    "c64"
+   ]
+  },
+  {
+   "id": "ra-vice_x64sc",
+   "name": "VICE x64sc Accurate",
+   "kind": "retroarch",
+   "core": "vice_x64sc",
+   "corename": "VICE x64sc",
+   "systems": [
+    "c64"
+   ]
+  },
+  {
+   "id": "ra-vice_xplus4",
+   "name": "VICE xplus4",
+   "kind": "retroarch",
+   "core": "vice_xplus4",
+   "corename": "VICE xplus4",
+   "systems": [
+    "plus4"
+   ]
+  },
+  {
+   "id": "ra-vice_xscpu64",
+   "name": "VICE x64 SuperCPU",
+   "kind": "retroarch",
+   "core": "vice_xscpu64",
+   "corename": "VICE xscpu64",
+   "systems": [
+    "c64"
+   ]
+  },
+  {
+   "id": "ra-vice_xvic",
+   "name": "VICE xvic",
+   "kind": "retroarch",
+   "core": "vice_xvic",
+   "corename": "VICE xvic",
+   "systems": [
+    "vic20"
+   ]
+  },
+  {
+   "id": "ra-vircon32",
+   "name": "Vircon32",
+   "kind": "retroarch",
+   "core": "vircon32",
+   "corename": "Vircon32",
+   "systems": [
+    "vircon32"
+   ]
+  },
+  {
+   "id": "ra-virtualjaguar",
+   "name": "Virtual Jaguar",
+   "kind": "retroarch",
+   "core": "virtualjaguar",
+   "corename": "Virtual Jaguar",
+   "systems": [
+    "atarijaguar",
+    "atarijaguarcd"
+   ]
+  },
+  {
+   "id": "ra-virtualxt",
+   "name": "VirtualXT",
+   "kind": "retroarch",
+   "core": "virtualxt",
+   "corename": "virtualxt",
+   "systems": [
+    "dos",
+    "pc"
+   ]
+  },
+  {
+   "id": "ra-vitaquake2",
+   "name": "vitaQuake 2",
+   "kind": "retroarch",
+   "core": "vitaquake2",
+   "corename": "vitaQuake 2",
+   "systems": [
+    "quake"
+   ]
+  },
+  {
+   "id": "ra-vitaquake2-rogue",
+   "name": "vitaQuake 2",
+   "kind": "retroarch",
+   "core": "vitaquake2-rogue",
+   "corename": "vitaQuake 2 [Rogue]",
+   "systems": [
+    "quake"
+   ]
+  },
+  {
+   "id": "ra-vitaquake2-xatrix",
+   "name": "vitaQuake 2",
+   "kind": "retroarch",
+   "core": "vitaquake2-xatrix",
+   "corename": "vitaQuake 2 [Xatrix]",
+   "systems": [
+    "quake"
+   ]
+  },
+  {
+   "id": "ra-vitaquake2-zaero",
+   "name": "vitaQuake 2",
+   "kind": "retroarch",
+   "core": "vitaquake2-zaero",
+   "corename": "vitaQuake 2 [Zaero]",
+   "systems": [
+    "quake"
+   ]
+  },
+  {
+   "id": "ra-vitaquake3",
+   "name": "vitaQuake 3",
+   "kind": "retroarch",
+   "core": "vitaquake3",
+   "corename": "vitaQuake 3",
+   "systems": [
+    "quake"
+   ]
+  },
+  {
+   "id": "ra-wasm4",
+   "name": "WASM-4",
+   "kind": "retroarch",
+   "core": "wasm4",
+   "corename": "WASM-4",
+   "systems": [
+    "wasm4"
+   ]
+  },
+  {
+   "id": "ra-x1",
+   "name": "X Millennium",
+   "kind": "retroarch",
+   "core": "x1",
+   "corename": "x1",
+   "systems": [
+    "x1"
+   ]
+  },
+  {
+   "id": "ra-yabasanshiro",
+   "name": "YabaSanshiro",
+   "kind": "retroarch",
+   "core": "yabasanshiro",
+   "corename": "YabaSanshiro",
+   "systems": [
+    "saturn",
+    "saturnjp"
+   ]
+  },
+  {
+   "id": "ra-yabause",
+   "name": "Yabause",
+   "kind": "retroarch",
+   "core": "yabause",
+   "corename": "Yabause",
+   "systems": [
+    "saturn",
+    "saturnjp"
+   ]
+  },
+  {
+   "id": "redream",
+   "name": "Redream",
+   "kind": "standalone",
+   "systems": [
+    "dreamcast"
+   ]
+  },
+  {
+   "id": "rosalies-mupen-gui",
+   "name": "Rosalie's Mupen GUI",
+   "kind": "standalone",
+   "systems": [
+    "n64",
+    "n64dd"
+   ]
+  },
+  {
+   "id": "rpcs3",
+   "name": "RPCS3 ISO",
+   "kind": "standalone",
+   "systems": [
+    "consolearcade",
+    "ps3"
+   ]
+  },
+  {
+   "id": "ruffle",
+   "name": "Ruffle",
+   "kind": "standalone",
+   "systems": [
+    "flash"
+   ]
+  },
+  {
+   "id": "ryujinx",
+   "name": "Ryujinx",
+   "kind": "standalone",
+   "systems": [
+    "switch"
+   ]
+  },
+  {
+   "id": "sameboy",
+   "name": "SameBoy",
+   "kind": "standalone",
+   "systems": [
+    "gb",
+    "gbc"
+   ]
+  },
+  {
+   "id": "scummvm",
+   "name": "ScummVM",
+   "kind": "standalone",
+   "systems": [
+    "scummvm"
+   ]
+  },
+  {
+   "id": "sdl2trs",
+   "name": "sdl2trs CMD File",
+   "kind": "standalone",
+   "systems": [
+    "trs-80"
+   ]
+  },
+  {
+   "id": "shadps4",
+   "name": "shadPS4 eboot.bin",
+   "kind": "standalone",
+   "systems": [
+    "ps4"
+   ]
+  },
+  {
+   "id": "shadps4-gui",
+   "name": "shadPS4 eboot.bin",
+   "kind": "standalone",
+   "systems": [
+    "ps4"
+   ]
+  },
+  {
+   "id": "sheepshaver",
+   "name": "SheepShaver",
+   "kind": "standalone",
+   "systems": [
+    "macintosh"
+   ]
+  },
+  {
+   "id": "simcoupe",
+   "name": "SimCoupé",
+   "kind": "standalone",
+   "systems": [
+    "samcoupe"
+   ]
+  },
+  {
+   "id": "simple64",
+   "name": "simple64",
+   "kind": "standalone",
+   "systems": [
+    "n64"
+   ]
+  },
+  {
+   "id": "skyemu",
+   "name": "SkyEmu",
+   "kind": "standalone",
+   "systems": [
+    "gb",
+    "gba",
+    "gbc",
+    "nds"
+   ]
+  },
+  {
+   "id": "sm2-emu",
+   "name": "sm2-emu",
+   "kind": "standalone",
+   "systems": [
+    "arcade",
+    "mame",
+    "model2"
+   ]
+  },
+  {
+   "id": "snes9x",
+   "name": "Snes9x",
+   "kind": "standalone",
+   "systems": [
+    "satellaview",
+    "sfc",
+    "snes",
+    "snesna",
+    "sufami"
+   ]
+  },
+  {
+   "id": "solarus",
+   "name": "Solarus",
+   "kind": "standalone",
+   "systems": [
+    "solarus"
+   ]
+  },
+  {
+   "id": "stella",
+   "name": "Stella",
+   "kind": "standalone",
+   "systems": [
+    "atari2600"
+   ]
+  },
+  {
+   "id": "supermodel",
+   "name": "Supermodel",
+   "kind": "standalone",
+   "systems": [
+    "arcade",
+    "mame",
+    "model3"
+   ]
+  },
+  {
+   "id": "superzsnes",
+   "name": "SUPER ZSNES",
+   "kind": "standalone",
+   "systems": [
+    "sfc",
+    "snes",
+    "snesna"
+   ]
+  },
+  {
+   "id": "tic-80",
+   "name": "TIC-80",
+   "kind": "standalone",
+   "systems": [
+    "tic80"
+   ]
+  },
+  {
+   "id": "triforce",
+   "name": "Triforce",
+   "kind": "standalone",
+   "systems": [
+    "consolearcade",
+    "gc",
+    "triforce"
+   ]
+  },
+  {
+   "id": "tsugaru",
+   "name": "Tsugaru",
+   "kind": "standalone",
+   "systems": [
+    "fmtowns"
+   ]
+  },
+  {
+   "id": "vba-m",
+   "name": "VBA-M",
+   "kind": "standalone",
+   "systems": [
+    "gb",
+    "gba",
+    "gbc"
+   ]
+  },
+  {
+   "id": "veesem",
+   "name": "veesem",
+   "kind": "standalone",
+   "systems": [
+    "vsmile"
+   ]
+  },
+  {
+   "id": "vice-x64sc",
+   "name": "VICE x64sc Accurate",
+   "kind": "standalone",
+   "systems": [
+    "c64"
+   ]
+  },
+  {
+   "id": "vice-xplus4",
+   "name": "VICE xplus4",
+   "kind": "standalone",
+   "systems": [
+    "plus4"
+   ]
+  },
+  {
+   "id": "vice-xvic",
+   "name": "VICE xvic",
+   "kind": "standalone",
+   "systems": [
+    "vic20"
+   ]
+  },
+  {
+   "id": "vircon32",
+   "name": "Vircon32",
+   "kind": "standalone",
+   "systems": [
+    "vircon32"
+   ]
+  },
+  {
+   "id": "visual-pinball",
+   "name": "Visual Pinball",
+   "kind": "standalone",
+   "systems": [
+    "vpinball"
+   ]
+  },
+  {
+   "id": "vita3k",
+   "name": "Vita3K",
+   "kind": "standalone",
+   "systems": [
+    "psvita"
+   ]
+  },
+  {
+   "id": "xemu",
+   "name": "xemu",
+   "kind": "standalone",
+   "systems": [
+    "consolearcade",
+    "xbox"
+   ]
+  },
+  {
+   "id": "xenia",
+   "name": "xenia",
+   "kind": "standalone",
+   "systems": [
+    "xbox360"
+   ]
+  },
+  {
+   "id": "xenia-edge",
+   "name": "Xenia Edge",
+   "kind": "standalone",
+   "systems": [
+    "xbox360"
+   ]
+  },
+  {
+   "id": "xenia-windows",
+   "name": "xenia (Wine)",
+   "kind": "standalone",
+   "systems": [
+    "xbox360"
+   ]
+  },
+  {
+   "id": "xm6pro68k-windows",
+   "name": "XM6 Pro-68k (Wine)",
+   "kind": "standalone",
+   "systems": [
+    "x68000"
+   ]
+  },
+  {
+   "id": "xm6typeg-windows",
+   "name": "XM6 TypeG (Wine)",
+   "kind": "standalone",
+   "systems": [
+    "x68000"
+   ]
+  },
+  {
+   "id": "xroar",
+   "name": "XRoar",
+   "kind": "standalone",
+   "systems": [
+    "coco",
+    "dragon32",
+    "tanodragon"
+   ]
+  },
+  {
+   "id": "ymir",
+   "name": "Ymir",
+   "kind": "standalone",
+   "systems": [
+    "saturn",
+    "saturnjp"
+   ]
+  },
+  {
+   "id": "zesarux",
+   "name": "ZEsarUX",
+   "kind": "standalone",
+   "systems": [
+    "zxnext"
+   ]
+  }
+ ]
+}
