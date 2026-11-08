@@ -11,7 +11,13 @@ RUN cargo build --release --locked
 
 FROM alpine:3
 COPY --from=build /src/target/release/romserver /usr/local/bin/romserver
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 ENV ROMSERVER_CONFIG=/config/settings/romserver.toml
+# Owner RomServer gives everything it creates (Unraid's usual nobody:users), and a umask that
+# keeps it writable over SMB. Override per install. The process itself stays root: Unraid's share
+# settings on the boot stick are root-only.
+ENV PUID=99 PGID=100 UMASK=000
 EXPOSE 8080
-ENTRYPOINT ["romserver"]
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["serve"]

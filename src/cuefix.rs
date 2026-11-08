@@ -14,6 +14,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use anyhow::{Context, Result};
 
+use crate::ownership;
 use crate::scan::{Class, classify, extension, parse_cue_files, stem};
 
 #[derive(Debug, PartialEq, Eq)]
@@ -148,9 +149,11 @@ fn propose(cue: &str, reference: &str, file_lines: usize, free: &[&str]) -> Verd
 pub fn apply(reports: &[CueReport], undo_root: &Path) -> Result<PathBuf> {
     let stamp = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs();
     let undo_dir = undo_root.join(format!("cuefix-{stamp}"));
-    fs::create_dir_all(&undo_dir).with_context(|| format!("create {}", undo_dir.display()))?;
+    ownership::create_dir_all(&undo_dir)
+        .with_context(|| format!("create {}", undo_dir.display()))?;
     let log_path = undo_dir.join("undo.tsv");
     let mut log = fs::File::create_new(&log_path)?;
+    ownership::own(&log_path)?;
 
     for (i, report) in reports.iter().filter(|r| r.fixable()).enumerate() {
         let original = fs::read_to_string(&report.cue)
@@ -166,12 +169,12 @@ pub fn apply(reports: &[CueReport], undo_root: &Path) -> Result<PathBuf> {
         let updated = rewrite(&original, &fixes);
 
         let backup = undo_dir.join(format!("{i:05}.cue"));
-        fs::write(&backup, &original)?;
+        ownership::write(&backup, &original)?;
         let tmp = report.cue.with_file_name(format!(
             ".{}.romserver-tmp",
             crate::scan::file_name(&report.cue)
         ));
-        fs::write(&tmp, &updated).with_context(|| format!("write {}", tmp.display()))?;
+        ownership::write(&tmp, &updated).with_context(|| format!("write {}", tmp.display()))?;
         fs::rename(&tmp, &report.cue)
             .with_context(|| format!("replace {}", report.cue.display()))?;
         writeln!(

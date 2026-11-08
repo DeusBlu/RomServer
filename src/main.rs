@@ -2,10 +2,17 @@ mod auth;
 mod catalog;
 mod cuefix;
 mod emulators;
+mod fixes;
+mod media;
+mod monitor;
+mod mounts;
 mod ops;
+mod ownership;
+mod platforms;
 mod project;
 mod scan;
 mod settings;
+mod shares;
 mod sync;
 #[cfg(test)]
 mod tests;

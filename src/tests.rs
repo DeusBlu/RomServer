@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 use crate::catalog::Catalog;
 use crate::project::{Link, project_system};
 use crate::scan::{Game, scan_system};
-use crate::settings::{Frontend, MultiDisc};
+use crate::settings::MultiDisc;
 use crate::sync;
 
 fn write(path: &Path, body: &str) {
@@ -95,7 +95,7 @@ fn multi_disc_modes() {
     let scan = scan_system(&psx).unwrap();
     let proj = |mode| {
         dsts(
-            &project_system(Frontend::EsDe, "psx", &psx, &scan, mode)
+            &project_system(Path::new("psx"), &psx, &scan, mode)
                 .unwrap()
                 .links,
         )
@@ -121,6 +121,382 @@ fn multi_disc_modes() {
     assert!(dir.contains(&"psx/FF7 (USA).m3u/FF7 (USA) (Disc 2).bin".into()));
 }
 
+/// Media in the library's own layout: one folder per game, disc sets included, with art that
+/// differs per disc in `disc-N/`.
+fn canonical_media(root: &Path) -> PathBuf {
+    let media = root.join("media/psx");
+    write(&media.join("FF7 (USA)/box-front.png"), "c1");
+    write(&media.join("FF7 (USA)/screenshot.png"), "s1");
+    write(&media.join("FF7 (USA)/disc-2/box-front.png"), "c2");
+    write(&media.join("FF7 (USA)/video.mp4"), "v");
+    write(&media.join("Lemmings (USA)/box-front.png"), "l");
+    write(&media.join("Lemmings (USA)/logo.png"), "logo");
+    write(&media.join("Unrelated/box-front.png"), "x");
+    media
+}
+
+fn media_dsts(psx: &Path, media: &Path, layout: &str, mode: MultiDisc) -> Vec<String> {
+    let scan = scan_system(psx).unwrap();
+    let index = crate::media::index_system(media).unwrap();
+    let layout = &crate::platforms::bundled().layouts[layout];
+    let p = project_system(&layout.rom_dir("psx"), psx, &scan, mode).unwrap();
+    dsts(&crate::media::media_links(
+        &index,
+        media,
+        &layout.media_base("psx"),
+        &layout.media,
+        &p.entries,
+    ))
+}
+
+#[test]
+fn es_de_views_get_their_own_media_tree_under_the_listed_names() {
+    let tmp = tempfile::tempdir().unwrap();
+    let psx = library(tmp.path());
+    let media = canonical_media(tmp.path());
+    let m3u = media_dsts(&psx, &media, "es-de", MultiDisc::M3u);
+    assert_eq!(
+        m3u,
+        vec![
+            "downloaded_media/psx/covers/FF7 (USA).png",
+            "downloaded_media/psx/covers/Lemmings (USA).png",
+            "downloaded_media/psx/marquees/Lemmings (USA).png",
+            "downloaded_media/psx/screenshots/FF7 (USA).png",
+            "downloaded_media/psx/videos/FF7 (USA).mp4",
+        ]
+    );
+    // Per disc, a disc's own art wins; everything else is the game's.
+    let discs = media_dsts(&psx, &media, "es-de", MultiDisc::Discs);
+    let src = |dst: &str| {
+        let scan = scan_system(&psx).unwrap();
+        let layout = &crate::platforms::bundled().layouts["es-de"];
+        let p = project_system(&layout.rom_dir("psx"), &psx, &scan, MultiDisc::Discs).unwrap();
+        let index = crate::media::index_system(&media).unwrap();
+        crate::media::media_links(
+            &index,
+            &media,
+            &layout.media_base("psx"),
+            &layout.media,
+            &p.entries,
+        )
+        .into_iter()
+        .find(|l| l.dst == Path::new(dst))
+        .map(|l| fs::read_to_string(l.src).unwrap())
+    };
+    assert_eq!(
+        src("downloaded_media/psx/covers/FF7 (USA) (Disc 2).png").as_deref(),
+        Some("c2")
+    );
+    assert_eq!(
+        src("downloaded_media/psx/covers/FF7 (USA) (Disc 1).png").as_deref(),
+        Some("c1")
+    );
+    assert!(discs.contains(&"downloaded_media/psx/videos/FF7 (USA) (Disc 2).mp4".into()));
+    // ES-DE lists the Game.m3u folder and names its media after the folder's stem.
+    assert_eq!(
+        media_dsts(&psx, &media, "es-de", MultiDisc::M3uDirectory),
+        m3u
+    );
+}
+
+#[test]
+fn batocera_views_get_media_beside_the_roms_in_its_naming() {
+    let tmp = tempfile::tempdir().unwrap();
+    let psx = library(tmp.path());
+    let media = canonical_media(tmp.path());
+    let links = media_dsts(&psx, &media, "batocera", MultiDisc::M3u);
+    assert_eq!(
+        links,
+        vec![
+            "roms/psx/images/FF7 (USA)-image.png",
+            "roms/psx/images/FF7 (USA)-thumb.png",
+            "roms/psx/images/Lemmings (USA)-marquee.png",
+            "roms/psx/images/Lemmings (USA)-thumb.png",
+            "roms/psx/images/Lemmings (USA)-wheel.png",
+            "roms/psx/videos/FF7 (USA)-video.mp4",
+        ]
+    );
+}
+
+#[test]
+fn existing_media_is_imported_where_recognised_and_asked_about_otherwise() {
+    use crate::media::{Decision, apply_existing, plan_existing};
+    let tmp = tempfile::tempdir().unwrap();
+    let root = tmp.path();
+    let psx = library(root);
+    let media = root.join("media/psx");
+    // An ES-DE tree in the media folder.
+    write(&media.join("covers/FF7 (USA).png"), "cover");
+    write(&media.join("marquees/Lemmings (USA).png"), "logo");
+    write(&media.join("covers/Unknown Game.png"), "?");
+    // Already in the library's layout, plus an ES-DE file that would clash with it.
+    write(&media.join("Lemmings (USA)/box-front.png"), "kept");
+    write(&media.join("covers/Lemmings (USA).png"), "clash");
+    // In the ROM folder: a set scraped once per disc in Batocera's naming, and an old Images/.
+    // Disc 1's cover is the set's cover again (a duplicate); disc 2's differs (its own art).
+    write(&psx.join("images/FF7 (USA) (Disc 1)-thumb.png"), "cover");
+    write(&psx.join("images/FF7 (USA) (Disc 2)-thumb.png"), "disc 2");
+    // No set-level image: disc 1's becomes the game's, disc 2's identical one is a duplicate.
+    write(&psx.join("images/FF7 (USA) (Disc 1)-image.png"), "shot");
+    write(&psx.join("images/FF7 (USA) (Disc 2)-image.png"), "shot");
+    write(&psx.join("Images/Lemmings (USA).jpg"), "old");
+    // A folder-based game's own data (PS3 style) and stray images: never scraped media.
+    write(&psx.join("Some Game.ps3/PS3_GAME/ICON0.PNG"), "icon");
+    write(&psx.join("Some Game.ps3/PS3_GAME/PIC1.PNG"), "backdrop");
+    write(&psx.join("Some Game.ps3/extras/poster.png"), "poster");
+    let settings: crate::settings::Settings = toml::from_str(&format!(
+        "library_root = \"{r}\"\nviews_root = \"{r}/views\"\ndatabase = \"{r}/db\"\n\
+         undo_dir = \"{r}/undo\"\n[systems]\npsx = {{ folder = \"PSX\" }}\n",
+        r = root.display()
+    ))
+    .unwrap();
+    let inode = fs::metadata(media.join("covers/FF7 (USA).png"))
+        .unwrap()
+        .ino();
+
+    let plan = plan_existing(&settings, "psx").unwrap();
+    let auto: Vec<String> = plan
+        .auto
+        .iter()
+        .map(|e| e.from.display().to_string())
+        .collect();
+    assert_eq!(auto.len(), 4, "{auto:?}");
+    assert_eq!(plan.duplicates.len(), 2, "{:?}", plan.duplicates);
+    assert_eq!(plan.needs_input.len(), 3, "{:?}", plan.needs_input);
+    let find = |name: &str| {
+        plan.needs_input
+            .iter()
+            .find(|e| e.from.ends_with(name))
+            .unwrap()
+            .clone()
+    };
+    let old = find("Images/Lemmings (USA).jpg");
+    assert_eq!(old.game.as_deref(), Some("Lemmings (USA)"));
+    assert_eq!(old.kind, None, "named after a game, kind unknown");
+    let unknown = find("Unknown Game.png");
+    assert_eq!(unknown.game, None);
+    let clash = find("covers/Lemmings (USA).png");
+    assert!(
+        clash.reason.contains("already has a different box-front"),
+        "{}",
+        clash.reason
+    );
+
+    let decided = vec![
+        (
+            old,
+            Decision::Import {
+                game: "Lemmings (USA)".into(),
+                kind: "title-screen".into(),
+            },
+        ),
+        (unknown, Decision::Discard),
+        (clash, Decision::Leave),
+    ];
+    let (imported, discarded, _) =
+        apply_existing(&settings, "psx", &plan.auto, &plan.duplicates, &decided).unwrap();
+    assert_eq!((imported, discarded), (5, 3));
+
+    let cover = media.join("FF7 (USA)/box-front.png");
+    assert_eq!(
+        fs::metadata(&cover).unwrap().ino(),
+        inode,
+        "a rename, not a copy"
+    );
+    assert_eq!(
+        fs::read_to_string(media.join("Lemmings (USA)/logo.png")).unwrap(),
+        "logo"
+    );
+    assert_eq!(
+        fs::read_to_string(media.join("Lemmings (USA)/box-front.png")).unwrap(),
+        "kept"
+    );
+    assert_eq!(
+        fs::read_to_string(media.join("Lemmings (USA)/title-screen.jpg")).unwrap(),
+        "old"
+    );
+    // One folder for the set; only the art that differs per disc is kept per disc.
+    assert_eq!(
+        fs::read_to_string(media.join("FF7 (USA)/disc-2/box-front.png")).unwrap(),
+        "disc 2"
+    );
+    // Batocera's -image is read as its first type, the mix image.
+    assert_eq!(
+        fs::read_to_string(media.join("FF7 (USA)/mix-image.png")).unwrap(),
+        "shot"
+    );
+    assert!(!media.join("FF7 (USA)/disc-1").exists());
+    assert!(!media.join("FF7 (USA)/disc-2/mix-image.png").exists());
+    assert!(
+        !media.join("FF7 (USA) (Disc 1)").exists() && !media.join("FF7 (USA) (Disc 2)").exists()
+    );
+    assert!(
+        media.join("covers/Lemmings (USA).png").exists(),
+        "left where it was"
+    );
+    assert!(!media.join("covers/Unknown Game.png").exists(), "discarded");
+    assert!(
+        root.join("undo").read_dir().unwrap().count() >= 2,
+        "log and discarded copy"
+    );
+    assert!(
+        !media.join("marquees").exists() && !psx.join("Images").exists(),
+        "emptied"
+    );
+    assert!(psx.join("FF7 (USA).m3u").exists(), "ROMs untouched");
+    assert!(
+        psx.join("Some Game.ps3/PS3_GAME/ICON0.PNG").exists(),
+        "game data untouched"
+    );
+    assert!(psx.join("Some Game.ps3/extras/poster.png").exists());
+    assert!(
+        !psx.join("images").exists(),
+        "per-disc scrape folder emptied"
+    );
+
+    // A second look finds only what was left.
+    let again = plan_existing(&settings, "psx").unwrap();
+    assert!(again.auto.is_empty() && again.duplicates.is_empty());
+    // Lemmings: box-front, logo, title-screen; FF7: box-front, mix-image, disc-2/box-front.
+    assert_eq!(again.in_place, 6, "found and already good");
+    assert_eq!(again.needs_input.len(), 1);
+}
+
+#[test]
+fn a_scrape_on_one_machine_reaches_every_view_and_the_library_keeps_the_files() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = tmp.path();
+    library(root);
+    let media = canonical_media(root);
+    let text = format!(
+        "library_root = \"{r}\"\nviews_root = \"{r}/views\"\ndatabase = \"{r}/db.sqlite\"\n\
+         undo_dir = \"{r}/undo\"\n\
+         [systems]\npsx = {{ folder = \"PSX\" }}\n[uses]\npsx = [\"ra-mednafen_psx\"]\n\
+         [nodes.desk]\nplatform = \"es-de\"\nuses = {{ psx = [\"ra-mednafen_psx\"] }}\n\
+         [nodes.bato]\nplatform = \"batocera\"\nuses = {{ psx = [\"ra-mednafen_psx\"] }}\n",
+        r = root.display()
+    );
+    let settings: crate::settings::Settings = toml::from_str(&text).unwrap();
+    settings.validate().unwrap();
+    let mut catalog = Catalog::open(&settings.database).unwrap();
+    for node in ["desk", "bato"] {
+        crate::ops::apply_additions(&settings, &mut catalog, node).unwrap();
+    }
+    let desk = settings.view_root("desk");
+    let bato = settings.view_root("bato");
+    let old_cover = desk.join("downloaded_media/psx/covers/FF7 (USA).png");
+    assert_eq!(fs::read_to_string(&old_cover).unwrap(), "c1");
+
+    // ES-DE scrapes: a cover for a game that had none, and a new cover for FF7, written the
+    // way scrapers do (delete, then create), so the projection is replaced by a real file.
+    write(
+        &desk.join("downloaded_media/psx/titlescreens/Lemmings (USA).png"),
+        "title",
+    );
+    fs::remove_file(&old_cover).unwrap();
+    write(&old_cover, "new cover");
+    write(
+        &desk.join("downloaded_media/psx/covers/Not In Library.png"),
+        "?",
+    );
+
+    // The planner never puts the old link back over the machine's new file.
+    let np = crate::ops::plan_node(
+        &settings,
+        &catalog,
+        "desk",
+        crate::ops::Target::Settings { allow_empty: false },
+    )
+    .unwrap();
+    assert!(np.plan.replace.is_empty(), "{:?}", np.plan.replace);
+    assert!(
+        np.plan
+            .conflicts
+            .iter()
+            .any(|c| c.contains("replaced on the machine"))
+    );
+
+    let plan = crate::media::plan_ingest(&settings, &catalog, "desk").unwrap();
+    assert_eq!(plan.items.len(), 2, "{:?}", plan.items);
+    assert_eq!(plan.skipped.len(), 1, "{:?}", plan.skipped);
+    let ff7 = plan
+        .items
+        .iter()
+        .find(|i| i.view_path.ends_with("FF7 (USA).png"))
+        .unwrap();
+    // FF7's art lives under its first disc's name in the library; the set itself is the game.
+    assert_eq!(ff7.target, media.join("FF7 (USA)/box-front.png"));
+    crate::media::apply_ingest(&settings, &mut catalog, "desk", &plan).unwrap();
+
+    // The library holds real files; the machine's names are now projections of them.
+    let title = media.join("Lemmings (USA)/title-screen.png");
+    assert_eq!(fs::read_to_string(&title).unwrap(), "title");
+    let ino = |p: &Path| fs::metadata(p).unwrap().ino();
+    assert_eq!(
+        ino(&desk.join("downloaded_media/psx/titlescreens/Lemmings (USA).png")),
+        ino(&title)
+    );
+    assert_eq!(ino(&old_cover), ino(&media.join("FF7 (USA)/box-front.png")));
+    assert!(
+        crate::media::plan_ingest(&settings, &catalog, "desk")
+            .unwrap()
+            .items
+            .is_empty(),
+        "nothing left to import"
+    );
+
+    // Batocera picks the new cover up under its own name.
+    crate::ops::apply_additions(&settings, &mut catalog, "bato").unwrap();
+    assert_eq!(
+        fs::read_to_string(bato.join("roms/psx/images/FF7 (USA)-thumb.png")).unwrap(),
+        "new cover"
+    );
+    // ES-DE's own view needs nothing more.
+    let np = crate::ops::plan_node(
+        &settings,
+        &catalog,
+        "desk",
+        crate::ops::Target::Settings { allow_empty: false },
+    )
+    .unwrap();
+    assert!(
+        np.plan.is_noop() && np.plan.conflicts.is_empty(),
+        "{:?}",
+        np.plan.conflicts
+    );
+}
+
+#[test]
+fn a_bin_without_a_cue_sheet_is_damaged_and_left_out_of_views() {
+    let tmp = tempfile::tempdir().unwrap();
+    let root = tmp.path();
+    library(root);
+    write(&root.join("PSX/Mystaria (USA).bin"), "no cue");
+    let settings: crate::settings::Settings = toml::from_str(&format!(
+        "library_root = \"{r}\"\nviews_root = \"{r}/views\"\ndatabase = \"{r}/db\"\n\
+         [systems]\npsx = {{ folder = \"PSX\" }}\n[uses]\npsx = [\"ra-mednafen_psx\"]\n\
+         [nodes.desk]\nplatform = \"es-de\"\nuses = {{ psx = [\"ra-mednafen_psx\"] }}\n",
+        r = root.display()
+    ))
+    .unwrap();
+    let catalog = Catalog::open(&settings.database).unwrap();
+    let np = crate::ops::plan_node(
+        &settings,
+        &catalog,
+        "desk",
+        crate::ops::Target::Settings { allow_empty: false },
+    )
+    .unwrap();
+    assert!(!dsts(&np.plan.create).iter().any(|d| d.contains("Mystaria")));
+    assert!(
+        np.warnings
+            .iter()
+            .any(|w| w.contains("Mystaria (USA).bin: damaged"))
+    );
+    let summary = crate::ops::summarise_system(&settings, "psx").unwrap();
+    assert!(summary.issues.iter().any(|i| i.contains("won't show up")));
+}
+
 struct Env {
     _tmp: tempfile::TempDir,
     psx: PathBuf,
@@ -143,7 +519,7 @@ fn env() -> Env {
 
 fn sync_mode(e: &mut Env, mode: MultiDisc) -> sync::Plan {
     let scan = scan_system(&e.psx).unwrap();
-    let links = project_system(Frontend::EsDe, "psx", &e.psx, &scan, mode)
+    let links = project_system(Path::new("psx"), &e.psx, &scan, mode)
         .unwrap()
         .links;
     let owned: BTreeMap<_, _> = e.catalog.owned("desktop").unwrap();

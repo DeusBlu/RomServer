@@ -37,6 +37,8 @@ td.ok { color: var(--ok); } td.warn, .card.warn .big { color: var(--warn); }
 .notice { padding: .7rem 1rem; border-radius: 8px; margin: .75rem 0; }
 .notice.ok { background: var(--okbg); color: var(--ok); }
 .notice.error { background: var(--badbg); color: var(--bad); }
+.notice.warn { background: var(--warnbg); color: var(--warn); }
+.notice ul { margin: .4rem 0 0; padding-left: 1.2rem; }
 button { font: inherit; padding: .45rem .9rem; border-radius: 6px; border: 1px solid var(--accent);
          background: var(--accent); color: #fff; cursor: pointer; }
 button.secondary { background: transparent; color: var(--accent); }

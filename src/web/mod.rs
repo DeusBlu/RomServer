@@ -10,6 +10,8 @@ mod library;
 mod login;
 mod machines;
 mod overview;
+mod saves;
+mod server_settings;
 
 use std::net::SocketAddr;
 use std::path::PathBuf;
@@ -69,12 +71,20 @@ pub async fn serve(config: PathBuf, listen: &str, password_file: PathBuf) -> any
     let protected = Router::new()
         .route("/", get(overview::dashboard))
         .route("/library", get(library::library_page))
+        .route("/library/systems", post(library::system_add))
+        .route("/library/systems/{id}/delete", post(library::system_delete))
+        .route("/library/media/plan", post(library::media_plan))
+        .route("/library/media/import", post(library::media_import))
         .route("/library/scan", post(library::library_scan))
         .route("/library/cues", post(library::cues_check))
         .route("/library/cues/fix", post(library::cues_fix))
         .route(
             "/emulators",
             get(emulators::emulators_page).post(emulators::emulators_save),
+        )
+        .route(
+            "/emulators/save-folders",
+            post(emulators::save_folders_save),
         )
         .route("/emulators/custom", post(emulators::custom_emulator_add))
         .route(
@@ -92,11 +102,39 @@ pub async fn serve(config: PathBuf, listen: &str, password_file: PathBuf) -> any
         .route("/machines/{name}/plan", post(machines::machine_plan))
         .route("/machines/{name}/apply", post(machines::machine_apply))
         .route("/machines/{name}/delete", post(machines::machine_delete))
+        .route("/machines/{name}/mounts.sh", get(machines::mounts_script))
+        .route(
+            "/machines/{name}/fixes",
+            get(machines::fixes_section).post(machines::fixes_apply),
+        )
+        .route("/machines/{name}/media/plan", post(machines::media_plan))
+        .route(
+            "/machines/{name}/media/import",
+            post(machines::media_import),
+        )
+        .route(
+            "/machines/{name}/save-folders",
+            post(machines::save_folders_create),
+        )
+        .route("/saves", get(saves::saves_page))
+        .route("/saves/banner", get(saves::banner))
+        .route("/saves/refresh", post(saves::refresh_now))
+        .route("/saves/adopt", post(saves::adopt))
+        .route("/saves/dismiss", post(saves::dismiss))
+        .route("/settings", get(server_settings::settings_page))
+        .route("/settings/paths", post(server_settings::paths_save))
+        .route("/settings/network", post(server_settings::network_save))
+        .route("/settings/shares", post(server_settings::share_save))
+        .route(
+            "/settings/shares/{name}/delete",
+            post(server_settings::share_delete),
+        )
         .route("/logout", post(login::logout))
         .route_layer(middleware::from_fn_with_state(
             state.clone(),
             login::require_auth,
         ));
+    saves::spawn_monitor(state.clone());
     let app = Router::new()
         .route("/login", get(login::login_page).post(login::login))
         .route("/setup", get(login::setup_page).post(login::setup))

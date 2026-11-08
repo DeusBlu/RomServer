@@ -47,11 +47,11 @@ pub(super) async fn dashboard(State(state): State<AppState>) -> Page {
                 p.muted { "No machines yet. " a href="/machines" { "Add one" } "." }
             } @else {
                 table.grid {
-                    tr { th { "Machine" } th { "Frontend" } th { "Links in view" } }
+                    tr { th { "Machine" } th { "Platform" } th { "Links in view" } }
                     @for (name, count) in &owned {
                         tr {
                             td { a href={"/machines/" (name)} { (name) } }
-                            td { (settings.nodes[name].frontend.label()) }
+                            td { (super::machines::platform_label(&settings.nodes[name].platform)) }
                             td { (count) }
                         }
                     }

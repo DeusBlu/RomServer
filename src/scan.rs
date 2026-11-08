@@ -4,10 +4,11 @@
 //! (with or without the `.cue` extension) plus the tracks its `FILE` lines name, or a single
 //! image. Every file a set references must live in the same folder as the `.m3u`.
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::fs;
 use std::io::Read;
 use std::path::{Path, PathBuf};
+use std::sync::OnceLock;
 
 use anyhow::{Context, Result};
 
@@ -89,6 +90,16 @@ pub fn stem(name: &str) -> &str {
     }
 }
 
+/// Whether a file name is an emulator save or save state, by extension alone.
+pub fn is_save_name(name: &str) -> bool {
+    let Some(ext) = extension(name) else {
+        return false;
+    };
+    let ext = ext.to_ascii_lowercase();
+    SAVE_EXTS.contains(&ext.as_str())
+        || (ext.starts_with("state") && ext[5..].bytes().all(|b| b.is_ascii_digit()))
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Class {
     Playlist,
@@ -110,9 +121,8 @@ pub(crate) fn classify(path: &Path, name: &str) -> Result<Class> {
     Ok(match ext.as_str() {
         "m3u" => Class::Playlist,
         "cue" => Class::CueSheet,
-        e if SAVE_EXTS.contains(&e) => Class::Save,
-        // RetroArch numbered states: .state1, .state2, …
-        e if e.starts_with("state") && e[5..].bytes().all(|b| b.is_ascii_digit()) => Class::Save,
+        // Includes RetroArch numbered states: .state1, .state2, …
+        _ if is_save_name(name) => Class::Save,
         e if IGNORED_EXTS.contains(&e) => Class::Ignored,
         _ => Class::Data,
     })
@@ -321,6 +331,46 @@ pub fn file_name(path: &Path) -> &str {
     path.file_name()
         .and_then(|n| n.to_str())
         .unwrap_or_default()
+}
+
+/// Whether every `.bin` on a system should be a cue sheet's track (`bin_is_cue_track` in the
+/// bundled catalog). A `.bin` without one there is a disc rip missing its cue, or a legacy
+/// cartridge dump (those systems' cartridges have their own extensions now, like Genesis's
+/// `.md`), which isn't supported.
+pub fn is_cue_system(system: &str) -> bool {
+    static SYSTEMS: OnceLock<HashSet<String>> = OnceLock::new();
+    SYSTEMS
+        .get_or_init(|| {
+            crate::emulators::bundled()
+                .map(|c| {
+                    c.systems
+                        .into_iter()
+                        .filter(|s| s.bin_is_cue_track)
+                        .map(|s| s.id)
+                        .collect()
+                })
+                .unwrap_or_default()
+        })
+        .contains(system)
+}
+
+/// `.bin` files no cue sheet points at, on a cue system: library problems, not games.
+pub fn lone_bins(scan: &SystemScan) -> Vec<PathBuf> {
+    let is_bin = |p: &Path| extension(file_name(p)).is_some_and(|x| x.eq_ignore_ascii_case("bin"));
+    let mut out = Vec::new();
+    for game in &scan.games {
+        let entries: Vec<&Entry> = match game {
+            Game::Single { entry, .. } => vec![entry],
+            Game::MultiDisc { discs, .. } => discs.iter().collect(),
+        };
+        out.extend(
+            entries
+                .into_iter()
+                .filter(|e| e.kind == EntryKind::File && is_bin(&e.file))
+                .map(|e| e.file.clone()),
+        );
+    }
+    out
 }
 
 #[cfg(test)]

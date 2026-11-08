@@ -53,9 +53,11 @@ impl Auth {
         let salt = hex(&random_bytes::<32>()?);
         let hash = hash_password(plaintext, &salt)?;
         if let Some(dir) = self.password_file.parent() {
-            std::fs::create_dir_all(dir).with_context(|| format!("create {}", dir.display()))?;
+            crate::ownership::create_dir_all(dir)
+                .with_context(|| format!("create {}", dir.display()))?;
         }
         write_private(&self.password_file, &format!("v1:{salt}:{hash}"))?;
+        crate::ownership::own(&self.password_file)?;
         println!("[auth] password set");
         Ok(())
     }

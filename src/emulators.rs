@@ -18,6 +18,13 @@ pub struct CatalogFile {
 pub struct CatalogSystem {
     pub id: String,
     pub name: String,
+    /// Which systems are the same hardware under different names (tg16 and pcengine), so the
+    /// library keeps their media in one folder. Taken from ES-DE's `<platform>` tag; the final
+    /// group is `platforms::media_group`, after the adjustments in assets/platforms.toml.
+    pub media_group: String,
+    /// Every `.bin` on this system should be a cue sheet's track (see `scan::lone_bins`).
+    #[serde(default)]
+    pub bin_is_cue_track: bool,
 }
 
 #[derive(Debug, Clone, Deserialize)]

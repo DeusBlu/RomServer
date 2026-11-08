@@ -66,6 +66,8 @@ const NAV: &[(&str, &str)] = &[
     ("/library", "Library"),
     ("/emulators", "Emulators"),
     ("/machines", "Machines"),
+    ("/saves", "Saves"),
+    ("/settings", "Settings"),
 ];
 
 pub(super) fn layout(title: &str, body: Markup) -> Markup {
@@ -96,6 +98,10 @@ pub(super) fn shell(title: &str, with_nav: bool, body: Markup) -> Markup {
                     }
                 }
                 main {
+                    @if with_nav {
+                        // The save monitor's banner, filled in after the page loads.
+                        div hx-get="/saves/banner" hx-trigger="load" hx-swap="innerHTML" {}
+                    }
                     h1 { (title) }
                     (body)
                 }

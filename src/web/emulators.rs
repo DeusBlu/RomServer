@@ -1,6 +1,6 @@
 //! Emulators page: the global "emulators I use" list and custom emulators.
 
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 
 use anyhow::{Context, anyhow, bail};
 use axum::extract::{Path, State};
@@ -13,7 +13,7 @@ use super::AppState;
 use super::common::{Page, blocking, layout, settings_or_notice};
 use crate::catalog::Catalog;
 use crate::emulators::{EmulatorInfo, Kind};
-use crate::settings::{CUSTOM_PREFIX, CustomEmulator, Settings, Uses};
+use crate::settings::{CUSTOM_PREFIX, CustomEmulator, Settings, Uses, is_folder_name};
 
 /// system → emulators offered for it: the catalog plus custom ones, sorted by name.
 pub(super) type Offered = BTreeMap<String, Vec<EmulatorInfo>>;
@@ -81,14 +81,27 @@ pub(super) async fn emulators_page(State(state): State<AppState>) -> Page {
         Ok(s) => s,
         Err(page) => return Ok(page),
     };
-    let (offered, system_names, settings) = {
+    let (offered, system_names, existing_folders, settings) = {
         let st = state.clone();
         blocking(move || {
             let db = st.db(&settings)?;
-            Ok((offered(&db, &settings)?, db.system_names()?, settings))
+            let existing = existing_save_folders(&settings);
+            Ok((
+                offered(&db, &settings)?,
+                db.system_names()?,
+                existing,
+                settings,
+            ))
         })
         .await?
     };
+    let names = names(&offered);
+    let in_use: BTreeSet<&str> = settings
+        .uses
+        .values()
+        .flatten()
+        .map(String::as_str)
+        .collect();
     let none: Vec<EmulatorInfo> = Vec::new();
     Ok(layout(
         "Emulators",
@@ -125,6 +138,43 @@ pub(super) async fn emulators_page(State(state): State<AppState>) -> Page {
                     }
                 }
                 div.savebar { button { "Save choices" } }
+            }
+
+            h2 { "Save folders" }
+            p.muted {
+                "Saves live in one folder per system under "
+                code { (settings.saves_root().display()) } ", shared by every emulator you use for "
+                "it: where their formats match they see the same save (Snes9x and bsnes both write "
+                "raw SRAM), where they don't each keeps its own file beside the others. Leave a box "
+                "empty to use the system's folder (shown greyed), or name another folder. An "
+                "emulator used for several systems keeps one folder, its first system's. Save states "
+                "are never shared: each emulator keeps its own."
+            }
+            @if in_use.is_empty() {
+                p.muted { "Tick some emulators above first." }
+            } @else {
+                form method="post" action="/emulators/save-folders" {
+                    datalist #save-folders { @for f in &existing_folders { option value=(f); } }
+                    table.grid {
+                        tr { th { "Emulator" } th { "Save folder" } }
+                        @for id in &in_use {
+                            tr {
+                                td {
+                                    @match names.get(id) {
+                                        Some(e) => { (e.name) " " (kind_tag(e.kind)) }
+                                        None => { (id) }
+                                    }
+                                }
+                                td {
+                                    input name={"folder:" (id)} list="save-folders"
+                                        placeholder=(settings.default_save_folder(id))
+                                        value=[settings.save_folders.get(*id)];
+                                }
+                            }
+                        }
+                    }
+                    button { "Save folders" }
+                }
             }
 
             h2 { "Custom emulators" }
@@ -184,6 +234,48 @@ pub(super) async fn emulators_save(
         Ok(settings)
     })
     .await?;
+    settings.save(&state.config)?;
+    Ok(Redirect::to("/emulators"))
+}
+
+/// Folders already under the saves root, offered as suggestions.
+fn existing_save_folders(settings: &Settings) -> Vec<String> {
+    let mut out: Vec<String> = std::fs::read_dir(settings.saves_root())
+        .into_iter()
+        .flatten()
+        .flatten()
+        .filter(|e| e.file_type().is_ok_and(|t| t.is_dir()))
+        .filter_map(|e| e.file_name().into_string().ok())
+        .filter(|n| !n.starts_with('.'))
+        .collect();
+    out.sort_by_key(|n| n.to_lowercase());
+    out
+}
+
+/// Fields are `folder:<emulator id>` → folder name; empty clears the assignment.
+pub(super) async fn save_folders_save(
+    State(state): State<AppState>,
+    Form(fields): Form<Vec<(String, String)>>,
+) -> Page<Redirect> {
+    let mut settings = state.settings()?;
+    for (key, value) in fields {
+        let Some(id) = key.strip_prefix("folder:") else {
+            continue;
+        };
+        if !settings.uses.values().flatten().any(|e| e == id) {
+            return Err(anyhow!("{id} isn't an emulator in use").into());
+        }
+        let folder = value.trim();
+        if folder.is_empty() || folder == settings.default_save_folder(id) {
+            settings.save_folders.remove(id);
+        } else if !is_folder_name(folder) {
+            return Err(anyhow!("{folder:?} isn't a plain folder name").into());
+        } else {
+            settings
+                .save_folders
+                .insert(id.to_string(), folder.to_string());
+        }
+    }
     settings.save(&state.config)?;
     Ok(Redirect::to("/emulators"))
 }

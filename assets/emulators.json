@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-25",
+ "generated": "2026-11-01",
  "sources": {
   "es-de": "https://gitlab.com/es-de/emulationstation-de/-/raw/master/resources/systems/linux/es_systems.xml",
   "libretro-core-info": "https://codeload.github.com/libretro/libretro-core-info/tar.gz/refs/heads/master"
@@ -7,783 +7,997 @@
  "systems": [
   {
    "id": "3do",
-   "name": "3DO Interactive Multiplayer"
+   "name": "3DO Interactive Multiplayer",
+   "media_group": "3do",
+   "bin_is_cue_track": true
   },
   {
    "id": "adam",
-   "name": "Coleco Adam"
+   "name": "Coleco Adam",
+   "media_group": "adam"
   },
   {
    "id": "ags",
-   "name": "Adventure Game Studio Game Engine"
+   "name": "Adventure Game Studio Game Engine",
+   "media_group": "pcwindows"
   },
   {
    "id": "amiga",
-   "name": "Commodore Amiga"
+   "name": "Commodore Amiga",
+   "media_group": "amiga"
   },
   {
    "id": "amiga1200",
-   "name": "Commodore Amiga 1200"
+   "name": "Commodore Amiga 1200",
+   "media_group": "amiga"
   },
   {
    "id": "amiga600",
-   "name": "Commodore Amiga 600"
+   "name": "Commodore Amiga 600",
+   "media_group": "amiga"
   },
   {
    "id": "amigacd32",
-   "name": "Commodore Amiga CD32"
+   "name": "Commodore Amiga CD32",
+   "media_group": "amigacd32"
   },
   {
    "id": "amstradcpc",
-   "name": "Amstrad CPC"
+   "name": "Amstrad CPC",
+   "media_group": "amstradcpc"
   },
   {
    "id": "android",
-   "name": "Google Android"
+   "name": "Google Android",
+   "media_group": "android"
   },
   {
    "id": "androidapps",
-   "name": "Android Apps"
+   "name": "Android Apps",
+   "media_group": "android"
   },
   {
    "id": "androidgames",
-   "name": "Android Games"
+   "name": "Android Games",
+   "media_group": "android"
   },
   {
    "id": "apple2",
-   "name": "Apple II"
+   "name": "Apple II",
+   "media_group": "apple2"
   },
   {
    "id": "apple2gs",
-   "name": "Apple IIGS"
+   "name": "Apple IIGS",
+   "media_group": "apple2gs"
   },
   {
    "id": "arcade",
-   "name": "Arcade"
+   "name": "Arcade",
+   "media_group": "arcade"
   },
   {
    "id": "arcadia",
-   "name": "Emerson Arcadia 2001"
+   "name": "Emerson Arcadia 2001",
+   "media_group": "arcadia"
   },
   {
    "id": "archimedes",
-   "name": "Acorn Archimedes"
+   "name": "Acorn Archimedes",
+   "media_group": "archimedes"
   },
   {
    "id": "arduboy",
-   "name": "Arduboy Miniature Game System"
+   "name": "Arduboy Miniature Game System",
+   "media_group": "arduboy"
   },
   {
    "id": "astrocde",
-   "name": "Bally Astrocade"
+   "name": "Bally Astrocade",
+   "media_group": "astrocde"
   },
   {
    "id": "atari2600",
-   "name": "Atari 2600"
+   "name": "Atari 2600",
+   "media_group": "atari2600"
   },
   {
    "id": "atari5200",
-   "name": "Atari 5200"
+   "name": "Atari 5200",
+   "media_group": "atari5200"
   },
   {
    "id": "atari7800",
-   "name": "Atari 7800 ProSystem"
+   "name": "Atari 7800 ProSystem",
+   "media_group": "atari7800"
   },
   {
    "id": "atari800",
-   "name": "Atari 800"
+   "name": "Atari 800",
+   "media_group": "atari800"
   },
   {
    "id": "atarijaguar",
-   "name": "Atari Jaguar"
+   "name": "Atari Jaguar",
+   "media_group": "atarijaguar",
+   "bin_is_cue_track": true
   },
   {
    "id": "atarijaguarcd",
-   "name": "Atari Jaguar CD"
+   "name": "Atari Jaguar CD",
+   "media_group": "atarijaguarcd",
+   "bin_is_cue_track": true
   },
   {
    "id": "atarilynx",
-   "name": "Atari Lynx"
+   "name": "Atari Lynx",
+   "media_group": "atarilynx"
   },
   {
    "id": "atarist",
-   "name": "Atari ST"
+   "name": "Atari ST",
+   "media_group": "atarist"
   },
   {
    "id": "atarixe",
-   "name": "Atari XE"
+   "name": "Atari XE",
+   "media_group": "atarixe"
   },
   {
    "id": "atomiswave",
-   "name": "Sammy Corporation Atomiswave"
+   "name": "Sammy Corporation Atomiswave",
+   "media_group": "arcade"
   },
   {
    "id": "bbcmicro",
-   "name": "Acorn Computers BBC Micro"
+   "name": "Acorn Computers BBC Micro",
+   "media_group": "bbcmicro"
   },
   {
    "id": "c64",
-   "name": "Commodore 64"
+   "name": "Commodore 64",
+   "media_group": "c64"
   },
   {
    "id": "cdimono1",
-   "name": "Philips CD-i"
+   "name": "Philips CD-i",
+   "media_group": "cdimono1"
   },
   {
    "id": "cdtv",
-   "name": "Commodore CDTV"
+   "name": "Commodore CDTV",
+   "media_group": "cdtv"
   },
   {
    "id": "chailove",
-   "name": "ChaiLove Game Engine"
+   "name": "ChaiLove Game Engine",
+   "media_group": "love"
   },
   {
    "id": "channelf",
-   "name": "Fairchild Channel F"
+   "name": "Fairchild Channel F",
+   "media_group": "channelf"
   },
   {
    "id": "coco",
-   "name": "Tandy Color Computer"
+   "name": "Tandy Color Computer",
+   "media_group": "coco"
   },
   {
    "id": "colecovision",
-   "name": "Coleco ColecoVision"
+   "name": "Coleco ColecoVision",
+   "media_group": "colecovision"
   },
   {
    "id": "consolearcade",
-   "name": "Console Arcade Systems"
+   "name": "Console Arcade Systems",
+   "media_group": "arcade"
   },
   {
    "id": "cps",
-   "name": "Capcom Play System"
+   "name": "Capcom Play System",
+   "media_group": "arcade"
   },
   {
    "id": "cps1",
-   "name": "Capcom Play System I"
+   "name": "Capcom Play System I",
+   "media_group": "arcade"
   },
   {
    "id": "cps2",
-   "name": "Capcom Play System II"
+   "name": "Capcom Play System II",
+   "media_group": "arcade"
   },
   {
    "id": "cps3",
-   "name": "Capcom Play System III"
+   "name": "Capcom Play System III",
+   "media_group": "arcade"
   },
   {
    "id": "crvision",
-   "name": "VTech CreatiVision"
+   "name": "VTech CreatiVision",
+   "media_group": "crvision"
   },
   {
    "id": "daphne",
-   "name": "Daphne Arcade LaserDisc Emulator"
+   "name": "Daphne Arcade LaserDisc Emulator",
+   "media_group": "daphne"
   },
   {
    "id": "desktop",
-   "name": "Desktop Applications"
+   "name": "Desktop Applications",
+   "media_group": "pcwindows"
   },
   {
    "id": "doom",
-   "name": "Doom"
+   "name": "Doom",
+   "media_group": "pc"
   },
   {
    "id": "dos",
-   "name": "DOS (PC)"
+   "name": "DOS (PC)",
+   "media_group": "dos"
   },
   {
    "id": "dragon32",
-   "name": "Dragon Data Dragon 32"
+   "name": "Dragon Data Dragon 32",
+   "media_group": "dragon32"
   },
   {
    "id": "dreamcast",
-   "name": "Sega Dreamcast"
+   "name": "Sega Dreamcast",
+   "media_group": "dreamcast"
   },
   {
    "id": "easyrpg",
-   "name": "EasyRPG Game Engine"
+   "name": "EasyRPG Game Engine",
+   "media_group": "easyrpg"
   },
   {
    "id": "electron",
-   "name": "Acorn Electron"
+   "name": "Acorn Electron",
+   "media_group": "electron"
   },
   {
    "id": "emulators",
-   "name": "Emulators"
+   "name": "Emulators",
+   "media_group": "pcwindows"
   },
   {
    "id": "epic",
-   "name": "Epic Games Store"
+   "name": "Epic Games Store",
+   "media_group": "pcwindows"
   },
   {
    "id": "famicom",
-   "name": "Nintendo Family Computer"
+   "name": "Nintendo Family Computer",
+   "media_group": "famicom"
   },
   {
    "id": "fba",
-   "name": "FinalBurn Alpha"
+   "name": "FinalBurn Alpha",
+   "media_group": "arcade"
   },
   {
    "id": "fbneo",
-   "name": "FinalBurn Neo"
+   "name": "FinalBurn Neo",
+   "media_group": "arcade"
   },
   {
    "id": "fds",
-   "name": "Nintendo Famicom Disk System"
+   "name": "Nintendo Famicom Disk System",
+   "media_group": "fds"
   },
   {
    "id": "flash",
-   "name": "Adobe Flash"
+   "name": "Adobe Flash",
+   "media_group": "flash"
   },
   {
    "id": "fm7",
-   "name": "Fujitsu FM-7"
+   "name": "Fujitsu FM-7",
+   "media_group": "fm7"
   },
   {
    "id": "fmtowns",
-   "name": "Fujitsu FM Towns"
+   "name": "Fujitsu FM Towns",
+   "media_group": "fmtowns"
   },
   {
    "id": "fpinball",
-   "name": "Future Pinball"
+   "name": "Future Pinball",
+   "media_group": "fpinball"
   },
   {
    "id": "gamate",
-   "name": "Bit Corporation Gamate"
+   "name": "Bit Corporation Gamate",
+   "media_group": "gamate"
   },
   {
    "id": "gameandwatch",
-   "name": "Nintendo Game and Watch"
+   "name": "Nintendo Game and Watch",
+   "media_group": "gameandwatch"
   },
   {
    "id": "gamecom",
-   "name": "Tiger Electronics Game.com"
+   "name": "Tiger Electronics Game.com",
+   "media_group": "gamecom"
   },
   {
    "id": "gamegear",
-   "name": "Sega Game Gear"
+   "name": "Sega Game Gear",
+   "media_group": "gamegear",
+   "bin_is_cue_track": true
   },
   {
    "id": "gb",
-   "name": "Nintendo Game Boy"
+   "name": "Nintendo Game Boy",
+   "media_group": "gb"
   },
   {
    "id": "gba",
-   "name": "Nintendo Game Boy Advance"
+   "name": "Nintendo Game Boy Advance",
+   "media_group": "gba"
   },
   {
    "id": "gbc",
-   "name": "Nintendo Game Boy Color"
+   "name": "Nintendo Game Boy Color",
+   "media_group": "gbc"
   },
   {
    "id": "gc",
-   "name": "Nintendo GameCube"
+   "name": "Nintendo GameCube",
+   "media_group": "gc"
   },
   {
    "id": "genesis",
-   "name": "Sega Genesis"
+   "name": "Sega Genesis",
+   "media_group": "genesis",
+   "bin_is_cue_track": true
   },
   {
    "id": "gmaster",
-   "name": "Hartung Game Master"
+   "name": "Hartung Game Master",
+   "media_group": "gmaster"
   },
   {
    "id": "gx4000",
-   "name": "Amstrad GX4000"
+   "name": "Amstrad GX4000",
+   "media_group": "gx4000"
   },
   {
    "id": "intellivision",
-   "name": "Mattel Electronics Intellivision"
+   "name": "Mattel Electronics Intellivision",
+   "media_group": "intellivision"
   },
   {
    "id": "j2me",
-   "name": "Java 2 Micro Edition (J2ME)"
+   "name": "Java 2 Micro Edition (J2ME)",
+   "media_group": "j2me"
   },
   {
    "id": "kodi",
-   "name": "Kodi Home Theatre Software"
+   "name": "Kodi Home Theatre Software",
+   "media_group": "pcwindows"
   },
   {
    "id": "laserdisc",
-   "name": "LaserDisc Games"
+   "name": "LaserDisc Games",
+   "media_group": "daphne"
   },
   {
    "id": "lcdgames",
-   "name": "LCD Handheld Games"
+   "name": "LCD Handheld Games",
+   "media_group": "lcdgames"
   },
   {
    "id": "lowresnx",
-   "name": "LowRes NX Fantasy Console"
+   "name": "LowRes NX Fantasy Console",
+   "media_group": "lowresnx"
   },
   {
    "id": "lutris",
-   "name": "Lutris Open Gaming Platform"
+   "name": "Lutris Open Gaming Platform",
+   "media_group": "pc"
   },
   {
    "id": "lutro",
-   "name": "Lutro Game Engine"
+   "name": "Lutro Game Engine",
+   "media_group": "lutro"
   },
   {
    "id": "macintosh",
-   "name": "Apple Macintosh"
+   "name": "Apple Macintosh",
+   "media_group": "macintosh"
   },
   {
    "id": "mame",
-   "name": "Multiple Arcade Machine Emulator"
+   "name": "Multiple Arcade Machine Emulator",
+   "media_group": "arcade"
   },
   {
    "id": "mame-advmame",
-   "name": "AdvanceMAME"
+   "name": "AdvanceMAME",
+   "media_group": "arcade"
   },
   {
    "id": "mark3",
-   "name": "Sega Mark III"
+   "name": "Sega Mark III",
+   "media_group": "mastersystem",
+   "bin_is_cue_track": true
   },
   {
    "id": "mastersystem",
-   "name": "Sega Master System"
+   "name": "Sega Master System",
+   "media_group": "mastersystem",
+   "bin_is_cue_track": true
   },
   {
    "id": "megacd",
-   "name": "Sega Mega-CD"
+   "name": "Sega Mega-CD",
+   "media_group": "segacd",
+   "bin_is_cue_track": true
   },
   {
    "id": "megacdjp",
-   "name": "Sega Mega-CD"
+   "name": "Sega Mega-CD",
+   "media_group": "segacd",
+   "bin_is_cue_track": true
   },
   {
    "id": "megadrive",
-   "name": "Sega Mega Drive"
+   "name": "Sega Mega Drive",
+   "media_group": "megadrive",
+   "bin_is_cue_track": true
   },
   {
    "id": "megadrivejp",
-   "name": "Sega Mega Drive"
+   "name": "Sega Mega Drive",
+   "media_group": "megadrive",
+   "bin_is_cue_track": true
   },
   {
    "id": "megaduck",
-   "name": "Creatronic Mega Duck"
+   "name": "Creatronic Mega Duck",
+   "media_group": "megaduck"
   },
   {
    "id": "mess",
-   "name": "Multi Emulator Super System"
+   "name": "Multi Emulator Super System",
+   "media_group": "mess"
   },
   {
    "id": "model2",
-   "name": "Sega Model 2"
+   "name": "Sega Model 2",
+   "media_group": "arcade"
   },
   {
    "id": "model3",
-   "name": "Sega Model 3"
+   "name": "Sega Model 3",
+   "media_group": "arcade"
   },
   {
    "id": "moto",
-   "name": "Thomson MO/TO Series"
+   "name": "Thomson MO/TO Series",
+   "media_group": "moto"
   },
   {
    "id": "msx",
-   "name": "MSX"
+   "name": "MSX",
+   "media_group": "msx"
   },
   {
    "id": "msx1",
-   "name": "MSX1"
+   "name": "MSX1",
+   "media_group": "msx"
   },
   {
    "id": "msx2",
-   "name": "MSX2"
+   "name": "MSX2",
+   "media_group": "msx2"
   },
   {
    "id": "msxturbor",
-   "name": "MSX Turbo R"
+   "name": "MSX Turbo R",
+   "media_group": "msxturbor"
   },
   {
    "id": "mugen",
-   "name": "M.U.G.E.N Game Engine"
+   "name": "M.U.G.E.N Game Engine",
+   "media_group": "mugen"
   },
   {
    "id": "multivision",
-   "name": "Othello Multivision"
+   "name": "Othello Multivision",
+   "media_group": "sg-1000"
   },
   {
    "id": "n3ds",
-   "name": "Nintendo 3DS"
+   "name": "Nintendo 3DS",
+   "media_group": "n3ds"
   },
   {
    "id": "n64",
-   "name": "Nintendo 64"
+   "name": "Nintendo 64",
+   "media_group": "n64"
   },
   {
    "id": "n64dd",
-   "name": "Nintendo 64DD"
+   "name": "Nintendo 64DD",
+   "media_group": "n64"
   },
   {
    "id": "naomi",
-   "name": "Sega NAOMI"
+   "name": "Sega NAOMI",
+   "media_group": "arcade"
   },
   {
    "id": "naomi2",
-   "name": "Sega NAOMI 2"
+   "name": "Sega NAOMI 2",
+   "media_group": "arcade"
   },
   {
    "id": "naomigd",
-   "name": "Sega NAOMI GD-ROM"
+   "name": "Sega NAOMI GD-ROM",
+   "media_group": "arcade"
   },
   {
    "id": "nds",
-   "name": "Nintendo DS"
+   "name": "Nintendo DS",
+   "media_group": "nds"
   },
   {
    "id": "neogeo",
-   "name": "SNK Neo Geo"
+   "name": "SNK Neo Geo",
+   "media_group": "neogeo"
   },
   {
    "id": "neogeocd",
-   "name": "SNK Neo Geo CD"
+   "name": "SNK Neo Geo CD",
+   "media_group": "neogeocd"
   },
   {
    "id": "neogeocdjp",
-   "name": "SNK Neo Geo CD"
+   "name": "SNK Neo Geo CD",
+   "media_group": "neogeocd"
   },
   {
    "id": "nes",
-   "name": "Nintendo Entertainment System"
+   "name": "Nintendo Entertainment System",
+   "media_group": "nes"
   },
   {
    "id": "ngage",
-   "name": "Nokia N-Gage"
+   "name": "Nokia N-Gage",
+   "media_group": "ngage"
   },
   {
    "id": "ngp",
-   "name": "SNK Neo Geo Pocket"
+   "name": "SNK Neo Geo Pocket",
+   "media_group": "ngp"
   },
   {
    "id": "ngpc",
-   "name": "SNK Neo Geo Pocket Color"
+   "name": "SNK Neo Geo Pocket Color",
+   "media_group": "ngpc"
   },
   {
    "id": "odyssey2",
-   "name": "Magnavox Odyssey 2"
+   "name": "Magnavox Odyssey 2",
+   "media_group": "odyssey2"
   },
   {
    "id": "openbor",
-   "name": "OpenBOR Game Engine"
+   "name": "OpenBOR Game Engine",
+   "media_group": "openbor"
   },
   {
    "id": "oric",
-   "name": "Tangerine Computer Systems Oric"
+   "name": "Tangerine Computer Systems Oric",
+   "media_group": "oric"
   },
   {
    "id": "palm",
-   "name": "Palm OS"
+   "name": "Palm OS",
+   "media_group": "palm"
   },
   {
    "id": "pc",
-   "name": "IBM PC"
+   "name": "IBM PC",
+   "media_group": "pc"
   },
   {
    "id": "pc88",
-   "name": "NEC PC-8800 Series"
+   "name": "NEC PC-8800 Series",
+   "media_group": "pc88"
   },
   {
    "id": "pc98",
-   "name": "NEC PC-9800 Series"
+   "name": "NEC PC-9800 Series",
+   "media_group": "pc98"
   },
   {
    "id": "pcarcade",
-   "name": "PC Arcade Systems"
+   "name": "PC Arcade Systems",
+   "media_group": "arcade"
   },
   {
    "id": "pcengine",
-   "name": "NEC PC Engine"
+   "name": "NEC PC Engine",
+   "media_group": "pcengine"
   },
   {
    "id": "pcenginecd",
-   "name": "NEC PC Engine CD"
+   "name": "NEC PC Engine CD",
+   "media_group": "pcenginecd"
   },
   {
    "id": "pcfx",
-   "name": "NEC PC-FX"
+   "name": "NEC PC-FX",
+   "media_group": "pcfx"
   },
   {
    "id": "pico8",
-   "name": "PICO-8 Fantasy Console"
+   "name": "PICO-8 Fantasy Console",
+   "media_group": "pico8"
   },
   {
    "id": "plus4",
-   "name": "Commodore Plus/4"
+   "name": "Commodore Plus/4",
+   "media_group": "plus4"
   },
   {
    "id": "pokemini",
-   "name": "Nintendo Pokémon Mini"
+   "name": "Nintendo Pokémon Mini",
+   "media_group": "pokemini"
   },
   {
    "id": "ports",
-   "name": "Ports"
+   "name": "Ports",
+   "media_group": "pc"
   },
   {
    "id": "ps2",
-   "name": "Sony PlayStation 2"
+   "name": "Sony PlayStation 2",
+   "media_group": "ps2"
   },
   {
    "id": "ps3",
-   "name": "Sony PlayStation 3"
+   "name": "Sony PlayStation 3",
+   "media_group": "ps3"
   },
   {
    "id": "ps4",
-   "name": "Sony PlayStation 4"
+   "name": "Sony PlayStation 4",
+   "media_group": "ps4"
   },
   {
    "id": "psp",
-   "name": "Sony PlayStation Portable"
+   "name": "Sony PlayStation Portable",
+   "media_group": "psp"
   },
   {
    "id": "psvita",
-   "name": "Sony PlayStation Vita"
+   "name": "Sony PlayStation Vita",
+   "media_group": "psvita"
   },
   {
    "id": "psx",
-   "name": "Sony PlayStation"
+   "name": "Sony PlayStation",
+   "media_group": "psx",
+   "bin_is_cue_track": true
   },
   {
    "id": "pv1000",
-   "name": "Casio PV-1000"
+   "name": "Casio PV-1000",
+   "media_group": "pv1000"
   },
   {
    "id": "quake",
-   "name": "Quake"
+   "name": "Quake",
+   "media_group": "pc"
   },
   {
    "id": "samcoupe",
-   "name": "MGT SAM Coupé"
+   "name": "MGT SAM Coupé",
+   "media_group": "samcoupe"
   },
   {
    "id": "satellaview",
-   "name": "Nintendo Satellaview"
+   "name": "Nintendo Satellaview",
+   "media_group": "satellaview"
   },
   {
    "id": "saturn",
-   "name": "Sega Saturn"
+   "name": "Sega Saturn",
+   "media_group": "saturn",
+   "bin_is_cue_track": true
   },
   {
    "id": "saturnjp",
-   "name": "Sega Saturn"
+   "name": "Sega Saturn",
+   "media_group": "saturn",
+   "bin_is_cue_track": true
   },
   {
    "id": "scummvm",
-   "name": "ScummVM Game Engine"
+   "name": "ScummVM Game Engine",
+   "media_group": "scummvm"
   },
   {
    "id": "scv",
-   "name": "Epoch Super Cassette Vision"
+   "name": "Epoch Super Cassette Vision",
+   "media_group": "scv"
   },
   {
    "id": "sega32x",
-   "name": "Sega Mega Drive 32X"
+   "name": "Sega Mega Drive 32X",
+   "media_group": "sega32x",
+   "bin_is_cue_track": true
   },
   {
    "id": "sega32xjp",
-   "name": "Sega Super 32X"
+   "name": "Sega Super 32X",
+   "media_group": "sega32x",
+   "bin_is_cue_track": true
   },
   {
    "id": "sega32xna",
-   "name": "Sega Genesis 32X"
+   "name": "Sega Genesis 32X",
+   "media_group": "sega32x",
+   "bin_is_cue_track": true
   },
   {
    "id": "segacd",
-   "name": "Sega CD"
+   "name": "Sega CD",
+   "media_group": "segacd",
+   "bin_is_cue_track": true
   },
   {
    "id": "sfc",
-   "name": "Nintendo SFC (Super Famicom)"
+   "name": "Nintendo SFC (Super Famicom)",
+   "media_group": "snes"
   },
   {
    "id": "sg-1000",
-   "name": "Sega SG-1000"
+   "name": "Sega SG-1000",
+   "media_group": "sg-1000",
+   "bin_is_cue_track": true
   },
   {
    "id": "sgb",
-   "name": "Nintendo Super Game Boy"
+   "name": "Nintendo Super Game Boy",
+   "media_group": "sgb"
   },
   {
    "id": "snes",
-   "name": "Nintendo SNES (Super Nintendo)"
+   "name": "Nintendo SNES (Super Nintendo)",
+   "media_group": "snes"
   },
   {
    "id": "snesna",
-   "name": "Nintendo SNES (Super Nintendo)"
+   "name": "Nintendo SNES (Super Nintendo)",
+   "media_group": "snes"
   },
   {
    "id": "solarus",
-   "name": "Solarus Game Engine"
+   "name": "Solarus Game Engine",
+   "media_group": "solarus"
   },
   {
    "id": "spectravideo",
-   "name": "Spectravideo"
+   "name": "Spectravideo",
+   "media_group": "spectravideo"
   },
   {
    "id": "steam",
-   "name": "Valve Steam"
+   "name": "Valve Steam",
+   "media_group": "steam"
   },
   {
    "id": "stv",
-   "name": "Sega Titan Video Game System"
+   "name": "Sega Titan Video Game System",
+   "media_group": "arcade"
   },
   {
    "id": "sufami",
-   "name": "Bandai SuFami Turbo"
+   "name": "Bandai SuFami Turbo",
+   "media_group": "sufami"
   },
   {
    "id": "supergrafx",
-   "name": "NEC SuperGrafx"
+   "name": "NEC SuperGrafx",
+   "media_group": "supergrafx"
   },
   {
    "id": "supervision",
-   "name": "Watara Supervision"
+   "name": "Watara Supervision",
+   "media_group": "supervision"
   },
   {
    "id": "supracan",
-   "name": "Funtech Super A'Can"
+   "name": "Funtech Super A'Can",
+   "media_group": "supracan"
   },
   {
    "id": "switch",
-   "name": "Nintendo Switch"
+   "name": "Nintendo Switch",
+   "media_group": "switch"
   },
   {
    "id": "symbian",
-   "name": "Symbian"
+   "name": "Symbian",
+   "media_group": "ngage"
   },
   {
    "id": "tanodragon",
-   "name": "Tano Dragon"
+   "name": "Tano Dragon",
+   "media_group": "dragon32"
   },
   {
    "id": "tg16",
-   "name": "NEC TurboGrafx-16"
+   "name": "NEC TurboGrafx-16",
+   "media_group": "pcengine"
   },
   {
    "id": "tg-cd",
-   "name": "NEC TurboGrafx-CD"
+   "name": "NEC TurboGrafx-CD",
+   "media_group": "pcenginecd"
   },
   {
    "id": "ti99",
-   "name": "Texas Instruments TI-99"
+   "name": "Texas Instruments TI-99",
+   "media_group": "ti99"
   },
   {
    "id": "tic80",
-   "name": "TIC-80 Fantasy Computer"
+   "name": "TIC-80 Fantasy Computer",
+   "media_group": "tic80"
   },
   {
    "id": "to8",
-   "name": "Thomson TO8"
+   "name": "Thomson TO8",
+   "media_group": "moto"
   },
   {
    "id": "triforce",
-   "name": "Namco-Sega-Nintendo Triforce"
+   "name": "Namco-Sega-Nintendo Triforce",
+   "media_group": "arcade"
   },
   {
    "id": "trs-80",
-   "name": "Tandy TRS-80"
+   "name": "Tandy TRS-80",
+   "media_group": "trs-80"
   },
   {
    "id": "type-x",
-   "name": "Taito Type X"
+   "name": "Taito Type X",
+   "media_group": "arcade"
   },
   {
    "id": "uzebox",
-   "name": "Uzebox Open Source Console"
+   "name": "Uzebox Open Source Console",
+   "media_group": "uzebox"
   },
   {
    "id": "vectrex",
-   "name": "GCE Vectrex"
+   "name": "GCE Vectrex",
+   "media_group": "vectrex"
   },
   {
    "id": "vic20",
-   "name": "Commodore VIC-20"
+   "name": "Commodore VIC-20",
+   "media_group": "vic20"
   },
   {
    "id": "videopac",
-   "name": "Philips Videopac G7000"
+   "name": "Philips Videopac G7000",
+   "media_group": "odyssey2"
   },
   {
    "id": "vircon32",
-   "name": "Vircon32 Virtual Console"
+   "name": "Vircon32 Virtual Console",
+   "media_group": "vircon32"
   },
   {
    "id": "virtualboy",
-   "name": "Nintendo Virtual Boy"
+   "name": "Nintendo Virtual Boy",
+   "media_group": "virtualboy"
   },
   {
    "id": "vpinball",
-   "name": "Visual Pinball"
+   "name": "Visual Pinball",
+   "media_group": "vpinball"
   },
   {
    "id": "vsmile",
-   "name": "VTech V.Smile"
+   "name": "VTech V.Smile",
+   "media_group": "vsmile"
   },
   {
    "id": "wasm4",
-   "name": "WASM-4 Fantasy Console"
+   "name": "WASM-4 Fantasy Console",
+   "media_group": "wasm4"
   },
   {
    "id": "wii",
-   "name": "Nintendo Wii"
+   "name": "Nintendo Wii",
+   "media_group": "wii"
   },
   {
    "id": "wiiu",
-   "name": "Nintendo Wii U"
+   "name": "Nintendo Wii U",
+   "media_group": "wiiu"
   },
   {
    "id": "windows",
-   "name": "Microsoft Windows"
+   "name": "Microsoft Windows",
+   "media_group": "pcwindows"
   },
   {
    "id": "windows3x",
-   "name": "Microsoft Windows 3.x"
+   "name": "Microsoft Windows 3.x",
+   "media_group": "windows3x"
   },
   {
    "id": "windows9x",
-   "name": "Microsoft Windows 9x"
+   "name": "Microsoft Windows 9x",
+   "media_group": "pcwindows"
   },
   {
    "id": "wonderswan",
-   "name": "Bandai WonderSwan"
+   "name": "Bandai WonderSwan",
+   "media_group": "wonderswan"
   },
   {
    "id": "wonderswancolor",
-   "name": "Bandai WonderSwan Color"
+   "name": "Bandai WonderSwan Color",
+   "media_group": "wonderswancolor"
   },
   {
    "id": "x1",
-   "name": "Sharp X1"
+   "name": "Sharp X1",
+   "media_group": "x1"
   },
   {
    "id": "x68000",
-   "name": "Sharp X68000"
+   "name": "Sharp X68000",
+   "media_group": "x68000"
   },
   {
    "id": "xbox",
-   "name": "Microsoft Xbox"
+   "name": "Microsoft Xbox",
+   "media_group": "xbox"
   },
   {
    "id": "xbox360",
-   "name": "Microsoft Xbox 360"
+   "name": "Microsoft Xbox 360",
+   "media_group": "xbox360"
   },
   {
    "id": "xboxone",
-   "name": "Microsoft Xbox One"
+   "name": "Microsoft Xbox One",
+   "media_group": "xboxone"
   },
   {
    "id": "zmachine",
-   "name": "Infocom Z-machine"
+   "name": "Infocom Z-machine",
+   "media_group": "zmachine"
   },
   {
    "id": "zx81",
-   "name": "Sinclair ZX81"
+   "name": "Sinclair ZX81",
+   "media_group": "zx81"
   },
   {
    "id": "zxnext",
-   "name": "Sinclair ZX Spectrum Next"
+   "name": "Sinclair ZX Spectrum Next",
+   "media_group": "zxnext"
   },
   {
    "id": "zxspectrum",
-   "name": "Sinclair ZX Spectrum"
+   "name": "Sinclair ZX Spectrum",
+   "media_group": "zxspectrum"
   }
  ],
  "emulators": [

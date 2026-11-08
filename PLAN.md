@@ -132,6 +132,14 @@ One static Rust binary (musl, distroless/scratch image) that is both the engine 
 - `rusqlite` (bundled) for the catalog; `serde` + `toml` for settings.
 - Same binary exposes CLI subcommands (`scan`, `plan`, `apply`, `audit`, `prep`) for scripting
   and tests.
+- Runs as root, because Unraid's share settings (`/boot/config/shares`, on the FAT boot stick)
+  are readable by root only, and hands everything it creates to `PUID:PGID` (defaults 99:100,
+  `nobody:users`, as Unraid's shares use) with `UMASK` 000, so it stays writable over SMB. All
+  creation goes through `src/ownership.rs` (create folders and chown exactly the new ones; new
+  files chowned). `docker-entrypoint.sh` sets the umask and brings `/config` in line. History:
+  the first builds created root-owned 755 folders nobody else could write in; dropping to
+  `nobody` instead lost access to the share settings. If the settings are mounted but unreadable,
+  the Settings page and each machine's mounts say so instead of reporting every share missing.
 - Long operations (scan, apply, prep) run as background jobs with progress streamed to the UI;
   every mutating job shows its dry-run plan first and needs a confirm click.
 
@@ -205,9 +213,14 @@ profile plus the systems its ticked emulators cover. Two machines with identical
 still get **two separate views**, so one can change later without any logic to split them
 apart. Links are only directory entries, so the duplication costs nothing.
 
-Canonical store: `/share/saves/<emulator>/` (states: `/share/states/<emulator>/`). Optionally,
-the user can point several emulators at one save folder (e.g. Snes9x and bsnes both write raw-SRAM
-`<rom name>.srm`), so one save follows the game across emulators.
+Canonical store: **one save folder per system**, `saves/<system>/` (by platform group, so tg16
+uses pcengine's), shared by every emulator used for that system. Where their formats match they
+see the same save (Snes9x and bsnes both write raw-SRAM `<rom name>.srm`); where they don't, each
+keeps its own file beside the others. Per emulator the user can name another folder instead
+(e.g. an existing `snes-saves`). An emulator used for several systems keeps one folder, its first
+system's, because RetroArch keeps one save folder per core. States are never shared:
+`states/<emulator>/`. (Corrected 2026-11-01: the first build defaulted to one folder per
+emulator, which kept emulators from ever sharing saves unless assigned by hand.)
 
 Rules and edge cases:
 - **Compatibility data comes later.** A future emulator database records each emulator's save
@@ -447,6 +460,163 @@ The catalog is embedded in the binary and loaded into SQLite (`emu_system`, `emu
 `[custom_emulators.custom-<slug>]` with a name and systems. Each machine's `uses` is a subset of
 the global one; unticking globally prunes machines. A machine's view = the systems it has ticks
 for. Login: Lantern's scheme (`src/auth.rs`).
+
+**Library and Settings in the UI (2026-10-31).** Systems are no longer hand-written TOML: the
+Library page lists the library's real subfolders that aren't systems yet (a share can hold
+backups and archives too, so nothing is assumed) and the user pairs one with a system from the
+catalog's ES-DE list. Removing a system drops its emulator choices everywhere (custom emulators
+left with no systems go too); views lose it at their next apply, and no files are deleted. The
+Settings page holds the paths (`library_root`, `views_root`, optional `saves_root`, default
+`library_root/saves`), `[network]` (server address clients use, `smb` | `nfs`) and the shares.
+Shares are read from Unraid's `/boot/config/shares/*.cfg` when it is mounted read-only into the
+container (default `/unraid/shares`; `shareExport`/`shareExportNFS` = `e` or `eh` means exported;
+configs whose folder is gone are skipped), and `[shares.<name>]` entries add to or override them
+by name. A server path maps to the deepest share containing it: SMB `//server/<share>/<rest>`,
+NFS `server:<path>`. The page shows what every machine's view and the save folders would be
+mounted from, and warns when the views folder is on a different filesystem than the library.
+A first-time user isn't expected to know what to share: when a path can't be mounted, the page
+(and each machine's mount list) says what to do in Unraid, e.g. "`views` has no Unraid share
+settings yet: open Shares → views, set SMB Security Settings → Export to Yes". A share Unraid
+created from a new top-level folder (the first view apply creates `views`) has no `.cfg` until
+its settings are saved, so it is invisible until then, and the advice covers that case.
+No `views` share exists on the Unraid box yet; it has to be created there before views can be
+mounted.
+
+**Platforms and mount bundles (2026-10-31).** A machine now picks a **platform** from
+`assets/platforms.toml` (embedded): ES-DE with native or Flatpak emulators, EmuDeck, RetroDECK,
+RetroPie, Batocera/Knulli, Lakka. It replaces §6's table as the source of truth and records,
+per platform: the view layout (folder renames such as `genesis` → `megadrive`), where ROMs and
+media mount, RetroArch's save/state folders and how it sorts them (`core` | `content` | `none`),
+and each standalone emulator's save paths. Paths were taken from EmuDeck's and RetroDECK's own
+setup scripts, not guessed: mounts go on the **real** folders (EmuDeck's
+`Emulation/saves/<emu>/*` are symlinks into Flatpak dirs; RetroDECK's real folders are under
+`retrodeck/saves`, with the emulator paths linked to them). Standalone emulators declare
+canonical **slots** so one canonical folder lines up across platforms that name things
+differently (Dolphin: `GC/EUR|USA|JAP`, `Wii`; RetroDECK calls them `gc/dolphin/EU|US|JP`).
+Views are now `views/<node>/roms/<system>` with `views/<node>/downloaded_media` beside it, so
+each is one mount (already-applied views relink on their next apply). Settings: `frontend`
+became `platform` (old files still load; `es-de` is a platform id), machines gained `home`,
+`base`, `uid`/`gid`, `credentials` (a path on the machine; RomServer never sees the contents),
+`retroarch_sort` and `sync_states`. Save folders: `[save_folders]` assigns emulator id →
+named folder under `saves_root` (default: its system's folder, see §5); emulators on one
+folder share saves when formats match. States always go to `states_root/<emulator id>`. RetroArch
+cores follow the machine's sort mode: per core name, per system folder, or one folder, and a
+group whose cores are assigned different folders is reported and not mounted. The Machines page
+shows every mount (local path ← remote), warnings, platform notes, offers to create missing
+canonical save folders (empty folders only), and downloads `romserver-<node>.sh`: systemd
+`.mount` + `.automount` units (names via `systemd-escape --path` rules) and an installer that
+refuses to start while fstab or another mount already uses a path, moves non-empty local
+folders aside and copies saves into the share with `cp -n`. Batocera gets its
+`batocera-boot.conf` ROMS line plus a `custom.sh` hook that mounts the saves (no automount
+there). Generated units pass `systemd-analyze verify`.
+
+**Media (2026-11-01).** No frontend's layout is canonical. Where frontends keep media differs
+on four axes: location (ES-DE `~/ES-DE/downloaded_media`, EmuDeck
+`~/Emulation/tools/downloaded_media`, RetroDECK `retrodeck/ES-DE/downloaded_media`, RetroArch
+`thumbnails/<playlist>`, muOS `info/catalogue`, all a tree of their own; Batocera/Knulli
+`roms/<system>/images|videos|manuals`, Pegasus `<rom dir>/media/<game>/`, Skyscraper's
+ROM-folder mode `roms/<system>/media/`, all inside the ROM folders), naming (per-type folders,
+one folder with suffixes such as Batocera's `-thumb`/`-image`/`-marquee`, per-game folders),
+type names (`covers` = `-thumb` = `boxFront` = `Named_Boxarts`) and discovery (file names vs.
+paths in `gamelist.xml`).
+
+So the library keeps media **frontend-neutral, one folder per game**:
+`media/<system>/<game>/<type>.<ext>`, types `box-front`, `box-back`, `box-3d`,
+`physical-media`, `screenshot`, `title-screen`, `logo` (ES-DE's "marquees" folder holds logos),
+`marquee`, `fanart`, `mix-image`, `video`, `manual`. Each layout in `assets/platforms.toml` maps
+target patterns to types, first available wins. **Disc sets are one game**: one folder named
+after the set, with art that belongs to one disc only in `<game>/disc-N/` (kept only where it
+differs from the game's). `m3u` views use the game's folder; in `discs` mode each disc looks in
+its `disc-N/` first, then the game's. (Names checked against Skyscraper's frontend
+modules): ES-DE-family views get `downloaded_media/<system>/covers/<name>.png` etc. as a tree
+mounted separately; Batocera views get `images/<name>-thumb.png`, `-image`, `-marquee`,
+`-wheel`, `videos/<name>-video.mp4` **beside the ROMs**; RetroPie views get Skyscraper's
+`media/covers/…` inside the ROM folders. No gamelists are generated: those frontends show the
+files once their own gamelist points there. Media names follow the names each view lists.
+
+**Media groups.** Systems that are one platform under several names share one media folder:
+`media/<group>/`, where the group comes from ES-DE's `<platform>` tag (now carried in
+`assets/emulators.json`): tg16 uses pcengine's, megacd/megacdjp use segacd's, sfc/snesna use
+snes's. `[media_groups]` in `platforms.toml` joins what ES-DE keeps apart but is the same
+hardware (megadrive → genesis, famicom → nes) and keeps ES-DE's catch-all scraper platforms
+(arcade, pc, pcwindows, android) separate, because their members are different systems.
+
+**Existing media (initial import).** Media from before RomServer is imported per system from the
+Library page. It looks in the system's media folder (and folders of its group's other names)
+and in sub-folders of its ROM folder (Batocera's `images/`, Skyscraper's `media/`, an old
+`Images/`). Folder-based games carry images of their own (PS3's `PS3_GAME/ICON0.PNG`,
+`PIC1.PNG`), so game-data folders (`PS3_GAME`, `PS3_UPDATE`, `PS3_EXTRA`, `USRDIR`) are never
+entered, and inside a ROM folder a file only counts as media if it is named after a game or sits
+in a folder named for media (`images`, `media`, `covers`, `screenshots`, `boxart`, …); anything
+else there is ignored without asking. Each file is read through every known layout's patterns, then matched to a game
+(single games, disc sets and each disc; a disc's art belongs to its set). A set scraped once per
+disc is folded into one game: per game and kind, the game's art is what the library already has,
+else the set's own, else the lowest disc's; other discs' byte-identical copies are duplicates
+(moved to the undo folder), ones that differ go to `disc-N/`. A scrape from a machine showing
+discs fills the game's folder while it lacks that kind, otherwise the disc's own. Real PS2
+preview: 10,397 recognised, 164 duplicates (every set's disc 2+ art matched disc 1's), none
+needing input. Recognised files are imported without asking. The rest
+are listed for a decision, per file or for a whole folder at once: **rename and re-import**
+(name the game and the kind) or **discard** (moved to the undo folder; re-scrape instead), or
+leave. Typical reasons: named after a game but the kind is unknown, no such game, or the library
+already has that kind for that game. Everything is validated before anything moves; imports
+are renames inside the library (inode kept, never overwrites), with an undo log; every view gets
+the additions afterwards. Read-only previews of the real library: SNES 9,056, PCEngine 1,021,
+Saturn 330, Sega CD 234 files recognised, none needing input. Not run yet.
+
+**New media (scraping is a deliberate task).** Scraping happens on a machine, into its own
+view: the main data set holds only real files, views only projections, so a scrape leaves real
+files in a view until the user runs **New media added** for that machine. It lists the real
+files in the view (anything that isn't still RomServer's link, by recorded inode), reads each
+through the machine's layout (pattern → type, name → game), and on confirm **copies** each into
+`media/<system>/<game>/<type>.<ext>`: written through the library's own path, so the bytes land
+on the library's disks (a hard link would leave them on the views share's), checked for size,
+placed without overwriting. Then it replaces the view's file with a link to the copy, records it,
+and updates every machine's view with **additions and relinks only** (no preview needed: nothing
+can be removed). Re-scraped art replaces the library's (newest wins); the old file is kept in
+the undo folder. Mounts never change; the media just appears.
+
+**Frontend fixes: ES-DE and cue tracks (2026-11-01).** ES-DE's defaults list `.bin` for every
+system that takes cue sheets (19 of them, PSX among them), so each cue's track files show up as
+games of their own. RomServer can't and doesn't touch a machine's ES-DE config; it advises. Each
+machine page shows which of its systems need it, with how many track files ES-DE lists. On
+these systems a `.bin` is always a cue sheet's track: a `.bin` without one is a disc rip missing
+its cue, or a legacy cartridge dump (the cartridge systems here have their own extensions now,
+like Genesis's `.md`), which isn't supported for now. Such a game is **damaged**: it is reported
+(Library scan, each view's preview warnings, the machine page) as "damaged, missing its cue
+sheet; it won't show up on any machine", and left out of every view, so no frontend lists an
+entry that can't play. On the real library this found one (Saturn:
+`Mystaria The Realms of Lore (U).bin`, probably a bad rip). The page then explains the hand fix (an entry in ES-DE's `custom_systems/es_systems.xml` replaces the built-in
+one of the same name: ES-DE's own entry minus `.bin .BIN`), and offers to do it: the user pastes
+their custom systems file and gets it back fixed (their entries kept; for a system they
+customised, only `.bin` is removed from its extensions), or says they have none and gets
+RomServer's default. Nothing is generated before they choose. ES-DE's entries come from
+`assets/esde_cue_systems.xml`, written by `tools/build_catalog.py`, and are used only for that
+fix. The library rule itself (which systems are cue systems, and finding lone `.bin` files) is
+frontend-neutral and lives in `scan.rs`: it reads each system's `bin_is_cue_track` flag in
+`assets/emulators.json`, which the builder sets where ES-DE lists both `.cue` and `.bin`.
+
+**Recorded inodes.** `view_entry` now stores the linked file's (device, inode) at link time. An
+owned path is relinked or removed only while it still holds that file. A different file there
+was written on the machine (a scraper replaces files by delete-and-create): it is reported for
+New media added, never overwritten. Before this, the planner's relink would have put the old art
+back over a fresh re-scrape that was the only copy. Links recorded before the change count as
+RomServer's while still linked elsewhere.
+
+**Save monitor and check (2026-10-31): built as §5 describes.** A background task walks every
+machine's view each minute (skipped while an apply holds the lock, since an apply creates files
+before recording them) and stores files RomServer didn't create in the `alert` table (node,
+path, kind `save` | `other`, first seen, dismissed); rows vanish when the file does. Every page
+loads a banner (htmx, `/saves/banner`) while save alerts are open. The **Saves** page lists them
+with **Move to <folder>**, offering the save folders of the emulators that machine has for the
+file's system, RetroArch cores first. The move is a rename, falling back to copy, size check,
+then remove across filesystems, and it **never overwrites**: if the folder already has that name,
+nothing moves. Only files the monitor reported as saves can be moved. Other files (media,
+gamelists) are listed quietly and never deleted. **My save didn't carry over**: pick a machine
+and a game (autocompleted from the names that machine's frontend lists, which RetroArch also
+names saves after); RomServer searches every save folder and every view and says which of
+these it is: reached a folder this machine uses, stuck in a view, under another
+emulator's folder, or nowhere (with the troubleshooting list from §5).
 
 **View rule: views are immutable/additive.** View files are never written; any change is
 remove + fresh link.

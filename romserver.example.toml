@@ -5,8 +5,24 @@ library_root = "/mnt/user/ROMS"
 # Must be reached through the same container mount as library_root, or hard links fail.
 views_root = "/mnt/user/views"
 database = "/config/data/romserver.sqlite"
+# Canonical save folders. Defaults to library_root/saves.
+# saves_root = "/mnt/user/ROMS/saves"
 
-# Short system name (ES-DE style) → folder under library_root.
+# How clients reach the server. Set in the UI (Settings).
+[network]
+server = "192.168.1.1"
+protocol = "smb"   # smb | nfs
+# Unraid's /boot/config/shares mounted read-only; shares are read from it when present.
+unraid_share_config = "/unraid/shares"
+unraid_user_root = "/mnt/user"
+
+# Shares set by hand: for non-Unraid servers, or to override what Unraid reports.
+# [shares.views]
+# path = "/mnt/user/views"
+# smb = true
+# nfs = false
+
+# Short system name (ES-DE style) → folder under library_root. Normally added in the UI (Library).
 [systems]
 psx = { folder = "PSX" }
 ps2 = { folder = "PS2" }
@@ -34,13 +50,26 @@ gba = ["ra-mgba"]
 ps2 = ["pcsx2"]
 psp = ["ppsspp"]
 
+# Saves go in one folder per system (saves_root/psx, …), shared by every emulator used for it:
+# same format, same save; different format, a file of its own beside the others.
+# Emulator id → another folder, where it shouldn't be the system's:
+[save_folders]
+ra-snes9x = "snes-saves"
+pcsx2 = "ps2-saves"
+
 # One entry per machine. Its view is views_root/<name>; uses is its checklist (a subset of the above).
+# platform: es-de | es-de-flatpak | emudeck | retrodeck | retropie | batocera | lakka (assets/platforms.toml)
 [nodes.desktop]
-frontend = "es-de"
+platform = "es-de"
 multi_disc = "m3u"   # m3u | discs | m3u-directory
+home = "/home/deus"
+credentials = "/home/deus/.smbcredentials-carrier"   # file on the machine; never its contents
+# uid = 1000, gid = 1000 (defaults), base = "~" (platform default)
+# retroarch_sort = "core"   # core | content | none; defaults to the platform's
+# sync_states = false
 uses = { snes = ["ra-snes9x"], psx = ["ra-mednafen_psx"], ps2 = ["pcsx2"] }
 
 [nodes.pi2]
-frontend = "es-de"
+platform = "retropie"
 multi_disc = "discs"
 uses = { snes = ["ra-snes9x"], nes = ["ra-mesen"], genesis = ["ra-genesis_plus_gx"], gba = ["ra-mgba"] }

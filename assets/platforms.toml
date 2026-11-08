@@ -1,0 +1,268 @@
+# Client platforms: where each one keeps ROMs, scraped media and emulator saves.
+#
+# Paths: "~" is the machine's home folder, "{base}" the platform's base folder. Both can be
+# changed per machine (an EmuDeck install on an SD card has a different base).
+#
+# Sources (checked 2026-10-31): EmuDeck's functions/EmuScripts/*.sh and its RetroArch config,
+# RetroDECK's components repo (component_prepare.sh per emulator, retroarch.cfg), the Batocera
+# wiki ("Store games on a NAS"), and each emulator's default Linux/Flatpak data folders.
+#
+# retroarch_sort: how RetroArch arranges saves inside its save folder.
+#   core    = "Sort Saves into Folders by Core Name" (saves/<core name>/)
+#   content = "Sort Saves into Folders by Content Directory" (saves/<system folder>/)
+#   none    = everything in one folder
+# It is a default; a machine can say otherwise, and it must match RetroArch's setting there.
+
+# Canonical sub-folders per standalone emulator. Every platform maps the same sub-folders to its
+# own local paths, so one canonical save folder lines up across platforms even when they name
+# things differently (RetroDECK's gc/dolphin/US is Dolphin's GC/USA). "" is the folder itself.
+[emulators.duckstation]
+slots = [""]
+[emulators.pcsx2]
+slots = [""]
+[emulators.dolphin]
+slots = ["GC/EUR", "GC/USA", "GC/JAP", "Wii"]
+[emulators.primehack]
+slots = ["GC/EUR", "GC/USA", "GC/JAP", "Wii"]
+[emulators.ppsspp]
+slots = [""]
+[emulators.rpcs3]
+slots = [""]
+[emulators.melonds]
+slots = [""]
+[emulators.cemu]
+slots = [""]
+[emulators.vita3k]
+slots = [""]
+
+# Media groups: systems that are one platform under several names share one media folder
+# (tg16's games are pcengine's games). The groups start from each system's media_group in
+# assets/emulators.json (ES-DE's <platform> tag), adjusted here:
+#   join: systems or platforms ES-DE keeps apart that are the same hardware → the group to use.
+#   separate: ES-DE's catch-all scraper platforms, whose members are different systems; each
+#     keeps its own media folder.
+[media_groups]
+join = { megadrive = "genesis", famicom = "nes" }
+separate = ["arcade", "pc", "pcwindows", "android"]
+
+# View layouts: how a frontend expects its ROM folders named, and where and under what names it
+# looks for scraped media.
+#
+# The library keeps media frontend-neutral, one folder per game:
+#   media/<system>/<game>/<type>.<ext>
+# with these types:
+#   box-front  box-back  box-3d  physical-media  screenshot  title-screen  logo  marquee
+#   fanart  mix-image  video  manual
+# ("logo" is the game's wheel/logo art; ES-DE calls its folder for it "marquees". "marquee" is
+# an arcade cabinet's header.)
+#
+# media_dir: set for frontends that keep media in a tree of its own beside the ROMs; the view
+#   gets <media_dir>/<system folder>/… and the machine mounts it separately. Unset: media goes
+#   inside each system's ROM folder, the way that frontend lays it out natively.
+# [layouts.<id>.media]: target → neutral types, first available wins. {name} is the entry's
+#   name as the view lists it (without extension); the source file's extension is added.
+# Names checked against Skyscraper's frontend modules (src/batocera.h, emulationstation.cpp)
+# and ES-DE's own folders.
+
+[layouts.es-de]
+media_dir = "downloaded_media"
+[layouts.es-de.media]
+"covers/{name}" = ["box-front"]
+"backcovers/{name}" = ["box-back"]
+"3dboxes/{name}" = ["box-3d"]
+"physicalmedia/{name}" = ["physical-media"]
+"screenshots/{name}" = ["screenshot"]
+"titlescreens/{name}" = ["title-screen"]
+"marquees/{name}" = ["logo"]
+"fanart/{name}" = ["fanart"]
+"miximages/{name}" = ["mix-image"]
+"videos/{name}" = ["video"]
+"manuals/{name}" = ["manual"]
+
+# EmulationStation as RetroPie ships it, with Skyscraper's media-in-ROM-folder layout. RetroPie's
+# EmulationStation shows media its gamelist.xml points at; the files are where its scraper puts
+# them, so its own scrape (or a gamelist pass) finds them.
+[layouts.retropie]
+folders = { genesis = "megadrive", sega32x = "sega32x", tg16 = "pcengine" }
+[layouts.retropie.media]
+"media/covers/{name}" = ["box-front"]
+"media/backcovers/{name}" = ["box-back"]
+"media/screenshots/{name}" = ["screenshot"]
+"media/wheels/{name}" = ["logo"]
+"media/marquees/{name}" = ["marquee"]
+"media/fanart/{name}" = ["fanart"]
+"media/videos/{name}" = ["video"]
+"media/manuals/{name}" = ["manual"]
+
+# Batocera / Knulli: everything image-like in images/ with a suffix per type.
+[layouts.batocera]
+folders = { genesis = "megadrive", tg16 = "pcengine", tg-cd = "pcenginecd" }
+[layouts.batocera.media]
+"images/{name}-thumb" = ["box-front"]
+"images/{name}-boxback" = ["box-back"]
+"images/{name}-image" = ["mix-image", "screenshot"]
+"images/{name}-marquee" = ["logo", "marquee"]
+"images/{name}-wheel" = ["logo"]
+"images/{name}-fanart" = ["fanart"]
+"videos/{name}-video" = ["video"]
+"manuals/{name}-manual" = ["manual"]
+
+# Lakka is RetroArch playlists, whose thumbnails are keyed by playlist label: not projected yet.
+[layouts.retroarch]
+folders = {}
+
+[platforms.es-de]
+label = "ES-DE, native emulators"
+layout = "es-de"
+mounter = "systemd"
+default_home = "/home/user"
+base = "~"
+roms = "~/ROMs"
+media = "~/ES-DE/downloaded_media"
+esde_custom_systems = "~/ES-DE/custom_systems"
+retroarch_saves = "~/.config/retroarch/saves"
+retroarch_states = "~/.config/retroarch/states"
+retroarch_sort = "core"
+[platforms.es-de.saves]
+duckstation = { "" = "~/.local/share/duckstation/memcards" }
+pcsx2 = { "" = "~/.config/PCSX2/memcards" }
+dolphin = { "GC/EUR" = "~/.local/share/dolphin-emu/GC/EUR", "GC/USA" = "~/.local/share/dolphin-emu/GC/USA", "GC/JAP" = "~/.local/share/dolphin-emu/GC/JAP", "Wii" = "~/.local/share/dolphin-emu/Wii" }
+primehack = { "GC/EUR" = "~/.local/share/primehack/GC/EUR", "GC/USA" = "~/.local/share/primehack/GC/USA", "GC/JAP" = "~/.local/share/primehack/GC/JAP", "Wii" = "~/.local/share/primehack/Wii" }
+ppsspp = { "" = "~/.config/ppsspp/PSP/SAVEDATA" }
+rpcs3 = { "" = "~/.config/rpcs3/dev_hdd0/home/00000001/savedata" }
+[platforms.es-de.states]
+duckstation = { "" = "~/.local/share/duckstation/savestates" }
+pcsx2 = { "" = "~/.config/PCSX2/sstates" }
+dolphin = { "" = "~/.local/share/dolphin-emu/StateSaves" }
+ppsspp = { "" = "~/.config/ppsspp/PSP/PPSSPP_STATE" }
+
+[platforms.es-de-flatpak]
+label = "ES-DE, Flatpak emulators"
+layout = "es-de"
+mounter = "systemd"
+default_home = "/home/user"
+base = "~"
+roms = "~/ROMs"
+media = "~/ES-DE/downloaded_media"
+esde_custom_systems = "~/ES-DE/custom_systems"
+retroarch_saves = "~/.var/app/org.libretro.RetroArch/config/retroarch/saves"
+retroarch_states = "~/.var/app/org.libretro.RetroArch/config/retroarch/states"
+retroarch_sort = "core"
+[platforms.es-de-flatpak.saves]
+duckstation = { "" = "~/.var/app/org.duckstation.DuckStation/data/duckstation/memcards" }
+pcsx2 = { "" = "~/.var/app/net.pcsx2.PCSX2/config/PCSX2/memcards" }
+dolphin = { "GC/EUR" = "~/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC/EUR", "GC/USA" = "~/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC/USA", "GC/JAP" = "~/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC/JAP", "Wii" = "~/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/Wii" }
+ppsspp = { "" = "~/.var/app/org.ppsspp.PPSSPP/config/ppsspp/PSP/SAVEDATA" }
+rpcs3 = { "" = "~/.var/app/net.rpcs3.RPCS3/config/rpcs3/dev_hdd0/home/00000001/savedata" }
+[platforms.es-de-flatpak.states]
+duckstation = { "" = "~/.var/app/org.duckstation.DuckStation/data/duckstation/savestates" }
+pcsx2 = { "" = "~/.var/app/net.pcsx2.PCSX2/config/PCSX2/sstates" }
+dolphin = { "" = "~/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/StateSaves" }
+ppsspp = { "" = "~/.var/app/org.ppsspp.PPSSPP/config/ppsspp/PSP/PPSSPP_STATE" }
+
+# EmuDeck links Emulation/saves/<emulator>/* to the emulators' real folders; mounts go on the
+# real folders, because mounting over a symlink doesn't redirect anything.
+[platforms.emudeck]
+label = "EmuDeck (SteamOS / Linux)"
+layout = "es-de"
+mounter = "systemd"
+default_home = "/home/deck"
+base = "~/Emulation"
+roms = "{base}/roms"
+media = "{base}/tools/downloaded_media"
+esde_custom_systems = "~/ES-DE/custom_systems"
+retroarch_saves = "~/.var/app/org.libretro.RetroArch/config/retroarch/saves"
+retroarch_states = "~/.var/app/org.libretro.RetroArch/config/retroarch/states"
+retroarch_sort = "none"
+notes = [
+    "EmuDeck turns RetroArch's save sorting off, so every core shares one folder. Turn on Settings > Saving > Sort Saves into Folders by Core Name and set this machine's sort to \"core\" to keep cores apart.",
+    "EmuDeck's updater can reset emulator settings; check the save mounts after updating it.",
+]
+[platforms.emudeck.saves]
+duckstation = { "" = "{base}/saves/duckstation/saves" }
+pcsx2 = { "" = "{base}/saves/pcsx2/saves" }
+dolphin = { "GC/EUR" = "~/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC/EUR", "GC/USA" = "~/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC/USA", "GC/JAP" = "~/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC/JAP", "Wii" = "~/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/Wii" }
+ppsspp = { "" = "~/.var/app/org.ppsspp.PPSSPP/config/ppsspp/PSP/SAVEDATA" }
+rpcs3 = { "" = "{base}/storage/rpcs3/dev_hdd0/home/00000001/savedata" }
+[platforms.emudeck.states]
+duckstation = { "" = "{base}/saves/duckstation/states" }
+pcsx2 = { "" = "{base}/saves/pcsx2/states" }
+dolphin = { "" = "~/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/StateSaves" }
+ppsspp = { "" = "~/.var/app/org.ppsspp.PPSSPP/config/ppsspp/PSP/PPSSPP_STATE" }
+
+# RetroDECK keeps the real folders under retrodeck/ and links the emulators' paths to them.
+[platforms.retrodeck]
+label = "RetroDECK"
+layout = "es-de"
+mounter = "systemd"
+default_home = "/home/deck"
+base = "~/retrodeck"
+roms = "{base}/roms"
+media = "{base}/ES-DE/downloaded_media"
+esde_custom_systems = "{base}/ES-DE/custom_systems"
+retroarch_saves = "{base}/saves"
+retroarch_states = "{base}/states"
+retroarch_sort = "content"
+[platforms.retrodeck.saves]
+duckstation = { "" = "{base}/saves/psx/duckstation/memcards" }
+pcsx2 = { "" = "{base}/saves/ps2/pcsx2/memcards" }
+dolphin = { "GC/EUR" = "{base}/saves/gc/dolphin/EU", "GC/USA" = "{base}/saves/gc/dolphin/US", "GC/JAP" = "{base}/saves/gc/dolphin/JP", "Wii" = "{base}/saves/wii/dolphin" }
+primehack = { "GC/EUR" = "{base}/saves/gc/primehack/EU", "GC/USA" = "{base}/saves/gc/primehack/US", "GC/JAP" = "{base}/saves/gc/primehack/JP", "Wii" = "{base}/saves/wii/primehack" }
+ppsspp = { "" = "{base}/saves/PSP/PPSSPP-SA" }
+rpcs3 = { "" = "{base}/saves/ps3/rpcs3" }
+melonds = { "" = "{base}/saves/nds/melonds" }
+cemu = { "" = "{base}/saves/wiiu/cemu" }
+vita3k = { "" = "{base}/saves/psvita/vita3k" }
+[platforms.retrodeck.states]
+duckstation = { "" = "{base}/states/psx/duckstation" }
+pcsx2 = { "" = "{base}/states/ps2/pcsx2" }
+dolphin = { "" = "{base}/states/dolphin" }
+ppsspp = { "" = "{base}/states/PSP/PPSSPP-SA" }
+melonds = { "" = "{base}/states/nds/melonds" }
+
+[platforms.retropie]
+label = "RetroPie"
+layout = "retropie"
+mounter = "systemd"
+default_home = "/home/pi"
+base = "~/RetroPie"
+roms = "{base}/roms"
+retroarch_saves = "{base}/saves"
+retroarch_states = "{base}/states"
+retroarch_sort = "core"
+notes = [
+    "RetroPie's RetroArch saves beside the ROM by default, which would land in this machine's view only. In /opt/retropie/configs/all/retroarch.cfg set savefile_directory = \"~/RetroPie/saves\", savestate_directory = \"~/RetroPie/states\" and sort_savefiles_enable = \"true\" (sort_savestates_enable too if states are synced).",
+    "Scraped media is placed in each system's ROM folder (media/covers, media/screenshots, …) the way Skyscraper lays it out; RetroPie's EmulationStation shows it once its gamelist.xml points there (run Skyscraper, or its own scraper, against the existing files). Gamelists stay on the machine.",
+]
+
+# Batocera and Knulli have no systemd: ROMs mount through batocera-boot.conf, saves through
+# /userdata/system/custom.sh, which runs at boot.
+[platforms.batocera]
+label = "Batocera / Knulli"
+layout = "batocera"
+mounter = "batocera"
+default_home = "/userdata"
+base = "/userdata"
+roms = "{base}/roms"
+retroarch_saves = "{base}/saves"
+retroarch_states = "{base}/saves"
+retroarch_sort = "content"
+notes = [
+    "Batocera stores RetroArch saves per system (saves/<system>/), so a system's RetroArch cores share one save folder there.",
+    "Scraped media is placed beside the ROMs in Batocera's own layout (images/<game>-thumb.png, videos/<game>-video.mp4, …); Batocera shows it once its gamelist.xml points there (e.g. a Skyscraper gamelist pass over the existing files). Gamelists stay on the machine.",
+]
+
+[platforms.lakka]
+label = "Lakka"
+layout = "retroarch"
+mounter = "systemd"
+units_dir = "/storage/.config/system.d"
+default_home = "/storage"
+base = "/storage"
+roms = "{base}/roms"
+retroarch_saves = "{base}/savefiles"
+retroarch_states = "{base}/savestates"
+retroarch_sort = "none"
+notes = [
+    "Check Settings > Saving on the Lakka box and set this machine's RetroArch sort to match.",
+]
