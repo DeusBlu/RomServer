@@ -82,6 +82,10 @@ pub fn media_group_members(group: &str) -> Vec<String> {
 pub struct EmulatorSlots {
     /// Sub-folders of the emulator's canonical save folder; "" is the folder itself.
     pub slots: Vec<String>,
+    /// Slot → the system whose saves it holds. Slots not listed hold saves for every system
+    /// the emulator runs.
+    #[serde(default)]
+    pub systems: BTreeMap<String, String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -229,7 +233,20 @@ impl PlatformFile {
         &self.layouts[&platform.layout]
     }
 
+    /// The system whose saves an emulator's save slot holds, if it holds only one system's.
+    pub fn slot_system(&self, emulator: &str, slot: &str) -> Option<&str> {
+        self.emulators
+            .get(emulator)
+            .and_then(|e| e.systems.get(slot))
+            .map(String::as_str)
+    }
+
     fn check(&self) -> Result<()> {
+        for (emulator, e) in &self.emulators {
+            if let Some(slot) = e.systems.keys().find(|s| !e.slots.contains(s)) {
+                bail!("{emulator}: system given for undeclared slot {slot:?}");
+            }
+        }
         for (id, layout) in &self.layouts {
             for (target, types) in &layout.media {
                 if !target.contains("{name}") || target.starts_with('/') || target.contains("..") {

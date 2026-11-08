@@ -58,10 +58,12 @@ pub struct Settings {
     /// Emulators that aren't in the bundled catalog.
     #[serde(default)]
     pub custom_emulators: BTreeMap<String, CustomEmulator>,
-    /// Emulator id → save folder name under `saves_root`, where it isn't the system's folder.
-    /// Emulators on one folder share saves where their formats match.
+    /// system → emulator id → save folder name under `saves_root`, where it isn't the system's
+    /// folder. Keyed by both because an emulator used for several systems (PicoDrive for
+    /// genesis and segacd) keeps each system's saves apart. Emulators on one folder share
+    /// saves where their formats match.
     #[serde(default)]
-    pub save_folders: BTreeMap<String, String>,
+    pub save_folders: BTreeMap<String, BTreeMap<String, String>>,
     #[serde(default)]
     pub nodes: BTreeMap<String, Node>,
 }
@@ -355,9 +357,13 @@ impl Settings {
                 }
             }
         }
-        for (id, folder) in &self.save_folders {
-            if !is_folder_name(folder) {
-                bail!("save folder for {id}: {folder:?} must be a single folder name");
+        for (system, folders) in &self.save_folders {
+            for (id, folder) in folders {
+                if !is_folder_name(folder) {
+                    bail!(
+                        "save folder for {id} on {system}: {folder:?} must be a single folder name"
+                    );
+                }
             }
         }
         let platforms = crate::platforms::bundled();
@@ -449,25 +455,19 @@ impl Settings {
             .unwrap_or_else(|| self.library_root.join("states"))
     }
 
-    /// The save folder an emulator writes to: its assignment, or its system's.
-    pub fn save_folder(&self, emulator: &str) -> String {
-        match self.save_folders.get(emulator) {
+    /// The save folder an emulator writes to for one system: its assignment, or the system's.
+    pub fn save_folder(&self, system: &str, emulator: &str) -> String {
+        match self.save_folders.get(system).and_then(|f| f.get(emulator)) {
             Some(folder) => folder.clone(),
-            None => self.default_save_folder(emulator),
+            None => Self::default_save_folder(system),
         }
     }
 
-    /// Where an emulator's saves go unless assigned elsewhere: its system's folder (by platform
-    /// group, so tg16 and pcengine share), so every emulator for a system shares saves where
-    /// their formats match and keeps its own file beside the others where they don't. An
-    /// emulator used for several systems keeps one save folder (RetroArch has one per core),
-    /// the first system's.
-    pub fn default_save_folder(&self, emulator: &str) -> String {
-        self.uses
-            .iter()
-            .find(|(_, ids)| ids.iter().any(|e| e == emulator))
-            .map(|(system, _)| crate::platforms::media_group(system))
-            .unwrap_or_else(|| emulator.to_string())
+    /// Where a system's saves go unless assigned elsewhere: its own folder (by media group, so
+    /// tg16 and pcengine share), so every emulator for a system shares saves where their
+    /// formats match and keeps its own file beside the others where they don't.
+    pub fn default_save_folder(system: &str) -> String {
+        crate::platforms::media_group(system)
     }
 
     /// Removes a system and every choice that depended on it. Links already in views stay until
@@ -475,6 +475,7 @@ impl Settings {
     pub fn remove_system(&mut self, system: &str) {
         self.systems.remove(system);
         self.uses.remove(system);
+        self.save_folders.remove(system);
         for node in self.nodes.values_mut() {
             node.uses.remove(system);
         }
@@ -583,23 +584,18 @@ mod tests {
     fn emulators_save_into_their_systems_folder_unless_assigned() {
         let mut s = example();
         // Both PSX emulators share the system's folder, so a save in a shared format is one save.
-        assert_eq!(s.save_folder("ra-mednafen_psx"), "psx");
-        assert_eq!(s.save_folder("duckstation"), "psx");
+        assert_eq!(s.save_folder("psx", "ra-mednafen_psx"), "psx");
+        assert_eq!(s.save_folder("psx", "duckstation"), "psx");
         // Assigned folders win.
-        assert_eq!(s.save_folder("ra-snes9x"), "snes-saves");
-        // One emulator for two systems keeps one folder: its first system's.
-        assert_eq!(s.save_folder("ra-genesis_plus_gx"), "genesis");
+        assert_eq!(s.save_folder("snes", "ra-snes9x"), "snes-saves");
+        // One emulator for two systems keeps each system's saves apart.
+        assert_eq!(s.save_folder("genesis", "ra-genesis_plus_gx"), "genesis");
+        assert_eq!(s.save_folder("segacd", "ra-genesis_plus_gx"), "segacd");
         // Same platform under another name: the shared group folder.
-        s.uses.insert("tg16".into(), vec!["ra-pcee2".into()]);
-        s.systems.insert(
-            "tg16".into(),
-            System {
-                folder: "TG16".into(),
-            },
-        );
-        assert_eq!(s.save_folder("ra-pcee2"), "pcengine");
-        // Not used for anything: its own id.
-        assert_eq!(s.save_folder("ra-unused"), "ra-unused");
+        assert_eq!(s.save_folder("tg16", "ra-pcee2"), "pcengine");
+        // Removing a system drops its assignments.
+        s.remove_system("snes");
+        assert!(!s.save_folders.contains_key("snes"));
     }
 
     #[test]

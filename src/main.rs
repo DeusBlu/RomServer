@@ -10,6 +10,7 @@ mod ops;
 mod ownership;
 mod platforms;
 mod project;
+mod saves;
 mod scan;
 mod settings;
 mod shares;

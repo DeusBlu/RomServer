@@ -639,7 +639,7 @@ pub fn apply_existing(
     }
     for rel in &discards {
         let from = library.join(rel);
-        move_file(&from, &discard_dir.join(rel))?;
+        ownership::move_file(&from, &discard_dir.join(rel))?;
         emptied.extend(from.parent().map(Path::to_path_buf));
     }
     // Remove folders the moves emptied, up to (not including) the system's own folders.
@@ -817,27 +817,6 @@ fn existing_of_type(game_dir: &Path, kind: &str) -> Vec<PathBuf> {
     out
 }
 
-/// Moves a file, copying (and checking the size) when it has to cross filesystems.
-fn move_file(from: &Path, to: &Path) -> Result<()> {
-    if let Some(parent) = to.parent() {
-        ownership::create_dir_all(parent)
-            .with_context(|| format!("create {}", parent.display()))?;
-    }
-    match std::fs::rename(from, to) {
-        Ok(()) => Ok(()),
-        Err(e) if e.raw_os_error() == Some(18) => {
-            let len = std::fs::metadata(from)?.len();
-            ownership::copy(from, to).with_context(|| format!("copy to {}", to.display()))?;
-            if std::fs::metadata(to)?.len() != len {
-                let _ = std::fs::remove_file(to);
-                bail!("copy of {} came out the wrong size", from.display());
-            }
-            std::fs::remove_file(from).with_context(|| format!("remove {}", from.display()))
-        }
-        Err(e) => Err(e).with_context(|| format!("move {} to {}", from.display(), to.display())),
-    }
-}
-
 /// Carries out an ingest plan for one machine: the library gets a real copy of each file
 /// (written through the library's own path, so it lands on the library's disks), anything it
 /// replaces goes to the undo folder, and the view's file becomes a projection of the copy.
@@ -870,27 +849,10 @@ pub fn apply_ingest(
         for old in &item.replaces {
             let rel = old.strip_prefix(settings.media_root()).unwrap_or(old);
             let kept = replaced_dir.join(rel);
-            move_file(old, &kept)?;
+            ownership::move_file(old, &kept)?;
             writeln!(out, "replaced\t{}\t{}", old.display(), kept.display())?;
         }
-        let dir = item.target.parent().context("target has no folder")?;
-        ownership::create_dir_all(dir).with_context(|| format!("create {}", dir.display()))?;
-        // Copy beside the target, check it, then link it into place: never overwrites.
-        let temporary = dir.join(format!(".romserver-import-{stamp}"));
-        let len = std::fs::metadata(&view_file)?.len();
-        ownership::copy(&view_file, &temporary)
-            .with_context(|| format!("copy {}", view_file.display()))?;
-        if std::fs::metadata(&temporary)?.len() != len {
-            let _ = std::fs::remove_file(&temporary);
-            bail!("copy of {} came out the wrong size", view_file.display());
-        }
-        std::fs::hard_link(&temporary, &item.target)
-            .with_context(|| format!("place {}", item.target.display()))?;
-        std::fs::remove_file(&temporary)?;
-        // The machine's file becomes a projection of the library's.
-        std::fs::remove_file(&view_file)
-            .with_context(|| format!("remove {}", view_file.display()))?;
-        let id = crate::sync::make_link(&item.target, &view_file)?;
+        let id = crate::sync::import(&view_file, &item.target, stamp)?;
         writeln!(
             out,
             "imported\t{}\t{}",

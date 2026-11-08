@@ -90,6 +90,12 @@ pub fn plan_node(
             }
             links.extend(projection.links);
         }
+        // Saves and states, in the folders this machine's emulators use.
+        let index = crate::emulators::index(settings)?;
+        let (dirs, save_warnings) =
+            crate::saves::save_dirs(settings, node_name, &crate::emulators::by_id(&index))?;
+        warnings.extend(save_warnings);
+        links.extend(crate::saves::save_links(&dirs, &mut warnings)?);
     }
     let view_root = settings.view_root(node_name);
     Ok(NodePlan {

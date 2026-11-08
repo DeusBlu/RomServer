@@ -12,6 +12,7 @@ use anyhow::{Context, Result, bail};
 use crate::catalog::{Alert, AlertKind, Catalog};
 use crate::emulators::{EmulatorInfo, Kind};
 use crate::platforms::{self, VIEW_ROMS};
+use crate::saves;
 use crate::scan::{self, is_save_name};
 use crate::settings::{Settings, is_plain_relative};
 
@@ -75,8 +76,33 @@ fn walk(root: &Path, rel: &Path, out: &mut Vec<PathBuf>) -> Result<()> {
     Ok(())
 }
 
-/// Runs the monitor once and stores the result. Returns how many save alerts are open.
+/// Runs the monitor once: brings saves machines created into the library, brings every view's
+/// save and state links up to date (so a save made on one machine reaches the others), then
+/// stores what's left as alerts. Returns how many save alerts are open. A machine whose saves
+/// can't be handled is reported and the others still run.
 pub fn refresh(settings: &Settings, catalog: &mut Catalog) -> Result<usize> {
+    let index = crate::emulators::index(settings)?;
+    let emulators = crate::emulators::by_id(&index);
+    let nodes: Vec<String> = settings.nodes.keys().cloned().collect();
+    // Every machine's new saves first, so the second pass links them everywhere.
+    for node in &nodes {
+        let result = saves::plan_ingest(settings, catalog, node, &emulators).and_then(|plan| {
+            for problem in &plan.problems {
+                println!("[monitor] {node}: {problem}");
+            }
+            saves::apply_ingest(settings, catalog, node, &plan)
+        });
+        match result {
+            Ok(0) => {}
+            Ok(n) => println!("[monitor] {node}: {n} new save file(s) brought into the library"),
+            Err(e) => println!("[monitor] {node}: saves not brought in: {e:#}"),
+        }
+    }
+    for node in &nodes {
+        if let Err(e) = saves::sync_view(settings, catalog, node, &emulators) {
+            println!("[monitor] {node}: save links not updated: {e:#}");
+        }
+    }
     let found = scan_views(settings, catalog)?;
     catalog.sync_alerts(&found, now())?;
     Ok(found.iter().filter(|a| a.kind == AlertKind::Save).count())
@@ -120,7 +146,7 @@ pub fn adopt_candidates(
     });
     let mut out: Vec<String> = Vec::new();
     for id in ordered {
-        let folder = settings.save_folder(id).to_string();
+        let folder = settings.save_folder(system, id);
         if !out.contains(&folder) {
             out.push(folder);
         }
@@ -208,9 +234,8 @@ pub fn check(
     let node_settings = settings.node(node)?;
     let expected_folders: Vec<String> = node_settings
         .uses
-        .values()
-        .flatten()
-        .map(|id| settings.save_folder(id).to_string())
+        .iter()
+        .flat_map(|(system, ids)| ids.iter().map(|id| settings.save_folder(system, id)))
         .collect::<BTreeSet<_>>()
         .into_iter()
         .collect();
@@ -269,7 +294,7 @@ mod tests {
             "library_root = \"{lib}\"\nviews_root = \"{views}\"\ndatabase = \"{db}\"\n\
              [systems]\nsnes = {{ folder = \"SNES\" }}\n\
              [uses]\nsnes = [\"ra-snes9x\"]\n\
-             [save_folders]\nra-snes9x = \"snes-saves\"\n",
+             [save_folders.snes]\nra-snes9x = \"snes-saves\"\n",
             lib = root.join("lib").display(),
             views = root.join("views").display(),
             db = root.join("db.sqlite").display(),

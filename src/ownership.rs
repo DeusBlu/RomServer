@@ -57,6 +57,28 @@ pub fn copy(from: &Path, to: &Path) -> io::Result<u64> {
     Ok(len)
 }
 
+/// Moves a file, creating the target's folders, and copying (checking the size) when it has to
+/// cross filesystems.
+pub fn move_file(from: &Path, to: &Path) -> anyhow::Result<()> {
+    use anyhow::Context;
+    if let Some(parent) = to.parent() {
+        create_dir_all(parent).with_context(|| format!("create {}", parent.display()))?;
+    }
+    match std::fs::rename(from, to) {
+        Ok(()) => Ok(()),
+        Err(e) if e.raw_os_error() == Some(18) => {
+            let len = std::fs::metadata(from)?.len();
+            copy(from, to).with_context(|| format!("copy to {}", to.display()))?;
+            if std::fs::metadata(to)?.len() != len {
+                let _ = std::fs::remove_file(to);
+                anyhow::bail!("copy of {} came out the wrong size", from.display());
+            }
+            std::fs::remove_file(from).with_context(|| format!("remove {}", from.display()))
+        }
+        Err(e) => Err(e).with_context(|| format!("move {} to {}", from.display(), to.display())),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

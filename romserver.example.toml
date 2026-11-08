@@ -52,9 +52,12 @@ psp = ["ppsspp"]
 
 # Saves go in one folder per system (saves_root/psx, …), shared by every emulator used for it:
 # same format, same save; different format, a file of its own beside the others.
-# Emulator id → another folder, where it shouldn't be the system's:
-[save_folders]
+# An emulator used for several systems (genesis and segacd above) keeps each system's saves
+# apart. Per system, emulator id → another folder, where it shouldn't be the system's:
+[save_folders.snes]
 ra-snes9x = "snes-saves"
+
+[save_folders.ps2]
 pcsx2 = "ps2-saves"
 
 # One entry per machine. Its view is views_root/<name>; uses is its checklist (a subset of the above).

@@ -2,6 +2,8 @@
 //! `tools/build_catalog.py` from ES-DE's system definitions and libretro's core info files.
 //! Loaded into SQLite at startup so the UI can query it.
 
+use std::collections::HashMap;
+
 use anyhow::{Context, Result};
 use serde::Deserialize;
 
@@ -50,6 +52,42 @@ pub struct EmulatorInfo {
     pub name: String,
     pub kind: Kind,
     pub corename: Option<String>,
+}
+
+/// Every emulator RomServer knows, by id: the bundled catalog plus the user's custom ones.
+/// Built from the bundled file rather than the database, so planning never sees an empty list
+/// (which would read as "no emulators" and drop every save projection).
+pub fn index(settings: &crate::settings::Settings) -> Result<HashMap<String, EmulatorInfo>> {
+    let mut out: HashMap<String, EmulatorInfo> = bundled()?
+        .emulators
+        .into_iter()
+        .map(|e| {
+            let info = EmulatorInfo {
+                id: e.id.clone(),
+                name: e.name,
+                kind: Kind::from_catalog(&e.kind),
+                corename: e.corename,
+            };
+            (e.id, info)
+        })
+        .collect();
+    for (id, custom) in &settings.custom_emulators {
+        out.insert(
+            id.clone(),
+            EmulatorInfo {
+                id: id.clone(),
+                name: custom.name.clone(),
+                kind: Kind::Custom,
+                corename: None,
+            },
+        );
+    }
+    Ok(out)
+}
+
+/// Borrows an index the way the planners take it.
+pub fn by_id(index: &HashMap<String, EmulatorInfo>) -> HashMap<&str, &EmulatorInfo> {
+    index.iter().map(|(id, e)| (id.as_str(), e)).collect()
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

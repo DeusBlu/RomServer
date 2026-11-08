@@ -171,6 +171,32 @@ pub fn make_link(src: &Path, dst: &Path) -> Result<(u64, u64)> {
     Ok(identity(&fs::metadata(dst)?))
 }
 
+/// Brings a file a machine wrote into its view into the library: a real copy goes to `target`
+/// (written through the library's own path, so it lands on the library's disks), checked, and
+/// the view's file becomes a projection of it. Never overwrites `target`. Returns the identity
+/// the view path now shares.
+pub fn import(view_file: &Path, target: &Path, stamp: u64) -> Result<(u64, u64)> {
+    let dir = target.parent().context("target has no folder")?;
+    crate::ownership::create_dir_all(dir).with_context(|| format!("create {}", dir.display()))?;
+    // Copy beside the target, check it, then link it into place.
+    let temporary = dir.join(format!("{IMPORT_PREFIX}{stamp}"));
+    let len = fs::metadata(view_file)?.len();
+    crate::ownership::copy(view_file, &temporary)
+        .with_context(|| format!("copy {}", view_file.display()))?;
+    if fs::metadata(&temporary)?.len() != len {
+        let _ = fs::remove_file(&temporary);
+        bail!("copy of {} came out the wrong size", view_file.display());
+    }
+    let placed = fs::hard_link(&temporary, target);
+    fs::remove_file(&temporary)?;
+    placed.with_context(|| format!("place {}", target.display()))?;
+    fs::remove_file(view_file).with_context(|| format!("remove {}", view_file.display()))?;
+    make_link(target, view_file)
+}
+
+/// Names `import` uses for its copies while it checks them; never projected.
+pub const IMPORT_PREFIX: &str = ".romserver-import-";
+
 /// Removes now-empty directories up to (not including) the view root. `remove_dir` refuses
 /// non-empty directories, so nothing else can be lost.
 fn prune_empty_dirs(view_root: &Path, removed: &Path) {

@@ -63,7 +63,7 @@ Declarative and idempotent, like Terraform: running it twice does nothing the se
 | `plan` | Diff manifest vs. disk; validate (name collisions, broken `.m3u` refs, cross-device). |
 | `apply` | Execute plan; record `view_entry`. |
 | `audit` | Detect drift: view links whose inode no longer matches canonical, unknown files in views. Report only in v1. |
-| `watch` | inotify plus periodic full scan (inotify is unreliable for changes arriving via SMB/NFS/FUSE). |
+| `watch` | inotify plus periodic full scan (inotify does see SMB writes on Unraid, through `/mnt/user`; the scan covers writes that bypass it). |
 | `cli` | `scan`, `plan`, `apply`, `audit`, `profiles`. Web UI comes later. |
 
 Config: one TOML file listing enabled views, their profile, and profile options.
@@ -171,7 +171,12 @@ Support a one-time import of an existing ES-DE-style library into this layout.
 
 ## 5. Saves
 
-Saves never get hard-linked per file, so atomic-rename saves can't split links.
+Saves are **projected like ROMs** (decided 2026-11-08, superseding "saves are never hard-linked
+per file"): the library keeps them in its own shape, and each machine's view hard-links them into
+the shape that machine's emulators expect. The data's shape never follows a frontend's. Tested on
+supertux over SMB to Unraid with RetroArch (Snes9x): an in-game save rewrote the linked file in
+place (same inode, links=2, library copy changed with it); a brand-new save arrived as a real file
+in the view (links=1), which the monitor brings into the library.
 
 ### Where frontends put saves (researched 2026-10-25)
 
@@ -190,11 +195,13 @@ wiki, and the EmuDeck issue tracker on RetroArch sort options.
 
 ### Design: nodes, and generated mount units
 
-Saves are **not** routed through views. RomServer generates systemd `.mount` + `.automount`
-units for each client machine: one for its ROM view, plus one per emulator save directory,
-mounting a canonical save folder **directly onto the emulator's local save path**. This is the
-existing hand-written fstab pattern (`saves/snes-saves` → `~/.config/retroarch/saves/Snes9x`),
-generated instead of hand-written. No server-side symlinks are needed.
+Saves are routed through views. RomServer generates systemd `.mount` + `.automount` units for
+each client machine: one for its ROM view, and one for each outermost folder its emulators keep
+saves or states in, mounting that folder's place in the view (`views/<node>/machine/<the
+machine's own path>`, e.g. `views/supertux/machine/home/deus/.config/retroarch/saves/Snes9x`).
+The view mirrors the machine's paths, so a save folder inside another (RetroDECK keeps
+DuckStation's memory cards inside `saves/psx`) is covered by the outer mount. `src/saves.rs`
+works out the folders and which library folders fill each.
 
 Config model (people use the same emulators everywhere, so emulators are chosen once, globally):
 
@@ -213,14 +220,44 @@ profile plus the systems its ticked emulators cover. Two machines with identical
 still get **two separate views**, so one can change later without any logic to split them
 apart. Links are only directory entries, so the duplication costs nothing.
 
-Canonical store: **one save folder per system**, `saves/<system>/` (by platform group, so tg16
+Canonical store: **one save folder per system**, `saves/<system>/` (by media group, so tg16
 uses pcengine's), shared by every emulator used for that system. Where their formats match they
 see the same save (Snes9x and bsnes both write raw-SRAM `<rom name>.srm`); where they don't, each
-keeps its own file beside the others. Per emulator the user can name another folder instead
-(e.g. an existing `snes-saves`). An emulator used for several systems keeps one folder, its first
-system's, because RetroArch keeps one save folder per core. States are never shared:
-`states/<emulator>/`. (Corrected 2026-11-01: the first build defaulted to one folder per
-emulator, which kept emulators from ever sharing saves unless assigned by hand.)
+keeps its own file beside the others. Per system and emulator the user can name another folder
+instead (e.g. an existing `snes-saves`). The folder is chosen per **(system, emulator) pair**: an
+emulator used for several systems keeps each system's saves apart (PicoDrive's Sega CD saves go
+to `saves/segacd`, never `saves/genesis`). States are never shared between emulators:
+`states/<emulator>/`, shared by every system that emulator runs, since a state only loads in the
+emulator that made it, and systems sharing a format share states by design. (Corrected
+2026-11-01: the first build defaulted to one folder per emulator, which kept emulators from ever
+sharing saves unless assigned by hand. Corrected 2026-11-08: an emulator used for several systems
+had kept one folder, its first system's, which put Sega CD saves in Genesis's folder.)
+
+**Projection.** Each machine folder is filled with links to every file in the library folders
+that feed it. RetroArch writes to `saves/<core name>/` when sorting by core (its default) and to
+`saves/<content folder>/` when sorting by content folder (RetroArch's `runloop.c` appends the
+content folder, then the core name if both are on). So on a machine sorting by core, one core used
+for Genesis and Sega CD gets one folder showing both `saves/genesis/*` and `saves/segacd/*`; on a
+RetroDECK machine (by content folder) each system's folder shows its own. Nobody has to change
+RetroArch's settings. Two library files that would land on one name in a machine folder
+(case-insensitively, as SMB sees it) show the first and warn. Standalone emulators declare which
+system each save slot holds (`[emulators.dolphin] systems` in `assets/platforms.toml`: GameCube's
+`GC/*` slots are gc's, `Wii` is wii's); a slot is filled only where the machine uses the emulator
+for that system. Projections live in the same view as the ROMs, so a full Apply keeps them, and
+the monitor refreshes them every pass, so a save made on one machine reaches the others.
+
+**New saves (the monitor's ingest).** A file in a machine folder that isn't RomServer's link was
+written by the machine. If one library folder feeds that folder, it goes there; if several do
+(one core for two systems), the file's game name decides, matched against the names that machine
+lists for each system (RetroArch names saves after the launched file). It is copied into the
+library through the library's own path (so it lands on the library's disks), checked, and the
+view's file replaced by a link; the next pass links it into every other machine. Nothing is ever
+guessed or overwritten: a name matching no game, or games on both systems, stays in the view as an
+alert; a library file of the same name with different bytes is kept beside the machine's, both
+untouched (the same bytes just become a link). An emulator that saves by writing a new file
+replaces RomServer's link: that is the newest save, so it replaces the library's, and the old one
+goes to the undo folder. Deleting a save on a machine only removes that projection (the next pass
+puts it back); saves are deleted from RomServer.
 
 Rules and edge cases:
 - **Compatibility data comes later.** A future emulator database records each emulator's save
@@ -281,9 +318,13 @@ RetroArch decides where a save goes with two separate settings: `savefiles_in_co
 per-core mounts, the first leaves direct evidence on the server; the second leaves none.
 
 **1. Save monitor (automatic, direct evidence).** A background job inside RomServer walks every
-machine's view and compares it with what RomServer created (`view_entry`). It runs on a timer
-(about a minute), which is the source of truth; inotify can be added to react faster, but changes
-arriving over SMB/FUSE may not trigger it. A file RomServer didn't create is an **alert**:
+machine's view and compares it with what RomServer created (`view_entry`). It reacts to
+changes: an inotify watch on every machine's `views/<node>/machine/` tree runs a pass once
+writes have been quiet for 2 seconds. Samba on Unraid writes through the same `/mnt/user` mount
+the container sees, so SMB writes do raise events (checked 2026-11-08 from supertux: create,
+write, close and delete all arrived). A full pass every 10 minutes is the backstop, for writes
+that bypass `/mnt/user` (a share set to exclusive access) or a dropped event queue. A file
+RomServer didn't create is an **alert**:
 - a save-type file (`.srm`, `.sav`, `.state*`, …) beside a ROM → banner: *"steam-machine wrote
   `Chrono Trigger (USA).srm` into its view: Write Saves to Content Directory is on (or no save
   folder is set) on that machine."* Action: **adopt** (move it into the shared save folder for the
@@ -497,16 +538,28 @@ Views are now `views/<node>/roms/<system>` with `views/<node>/downloaded_media` 
 each is one mount (already-applied views relink on their next apply). Settings: `frontend`
 became `platform` (old files still load; `es-de` is a platform id), machines gained `home`,
 `base`, `uid`/`gid`, `credentials` (a path on the machine; RomServer never sees the contents),
-`retroarch_sort` and `sync_states`. Save folders: `[save_folders]` assigns emulator id →
-named folder under `saves_root` (default: its system's folder, see §5); emulators on one
+`retroarch_sort` and `sync_states`. Save folders: `[save_folders.<system>]` assigns emulator id
+→ named folder under `saves_root` (default: the system's folder, see §5); emulators on one
 folder share saves when formats match. States always go to `states_root/<emulator id>`. RetroArch
-cores follow the machine's sort mode: per core name, per system folder, or one folder, and a
-group whose cores are assigned different folders is reported and not mounted. The Machines page
+cores follow the machine's sort mode: per core name, per system folder, or one folder; since
+2026-11-08 each such folder is a projection in the view, filled from every library folder that
+feeds it (§5). The Machines page
 shows every mount (local path ← remote), warnings, platform notes, offers to create missing
-canonical save folders (empty folders only), and downloads `romserver-<node>.sh`: systemd
+save folders in the view (empty folders only; the monitor also creates them), and downloads `romserver-<node>.sh`: systemd
 `.mount` + `.automount` units (names via `systemd-escape --path` rules) and an installer that
-refuses to start while fstab or another mount already uses a path, moves non-empty local
-folders aside and copies saves into the share with `cp -n`. Batocera gets its
+refuses to start while fstab or another mount already uses a path. Since 2026-11-08 (after it
+moved a real local save folder aside on supertux and reported a `cp -n` that copied nothing as
+"imported") it only writes units and creates empty mount points (missing parents included,
+owned by the machine's user): it never moves, copies or deletes a file, and stops before
+changing anything if a mount point holds files (empty folders, like a frontend's ready-made
+system folders, are fine), naming the folder and saying to move the files out, install, then copy
+them into the mounted folder so the monitor brings them in. It enables with `--quiet`, prints
+each mount as `local <- remote` and says plainly that nothing was moved, copied or deleted. On
+SteamOS (detected by `/usr/lib/rauc/atomic-update-keep.conf`) it lists the `.automount` units in
+`/etc/atomic-update.conf.d/romserver-<node>.conf`, since SteamOS's own keep list covers `.mount`
+units and enable links but not `.automount` (untested through a real OS update yet).
+`uninstall` removes every unit carrying the machine's marker line, including ones left by an
+earlier platform, plus the keep file. Batocera gets its
 `batocera-boot.conf` ROMS line plus a `custom.sh` hook that mounts the saves (no automount
 there). Generated units pass `systemd-analyze verify`.
 
@@ -604,7 +657,8 @@ back over a fresh re-scrape that was the only copy. Links recorded before the ch
 RomServer's while still linked elsewhere.
 
 **Save monitor and check (2026-10-31): built as §5 describes.** A background task walks every
-machine's view each minute (skipped while an apply holds the lock, since an apply creates files
+machine's view when its save folders change, and every 10 minutes regardless (since 2026-11-08;
+it was each minute; a pass waits while an apply holds the lock, since an apply creates files
 before recording them) and stores files RomServer didn't create in the `alert` table (node,
 path, kind `save` | `other`, first seen, dismissed); rows vanish when the file does. Every page
 loads a banner (htmx, `/saves/banner`) while save alerts are open. The **Saves** page lists them

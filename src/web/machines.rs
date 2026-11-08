@@ -260,9 +260,11 @@ fn mounts_section(name: &str, plan: &MountPlan, missing: &[std::path::PathBuf]) 
     html! {
         h2 { "Mounts" }
         p.muted {
-            "What " (name) " mounts from the server: its view, plus a save folder for each emulator it has. "
-            "Download the script, copy it to the machine and run it with sudo. It installs automounts, moves "
-            "any existing local saves aside and copies them into the share without overwriting anything."
+            "What " (name) " mounts from its view on the server: its ROMs and media, and the folders its "
+            "emulators keep saves in, filled with the library's saves in the shape this machine expects. "
+            "Download the script, copy it to the machine and run it with sudo. It installs automounts and "
+            "nothing else: it never moves, copies or deletes a file, and stops without changing anything "
+            "if a folder it would mount over has files in it."
         }
         @if plan.mounts.is_empty() {
             p.muted { "Nothing to mount yet. Check the server address and shares under " a href="/settings" { "Settings" } "." }

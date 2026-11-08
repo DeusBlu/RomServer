@@ -1,6 +1,6 @@
 //! Emulators page: the global "emulators I use" list and custom emulators.
 
-use std::collections::{BTreeMap, BTreeSet, HashMap};
+use std::collections::{BTreeMap, HashMap};
 
 use anyhow::{Context, anyhow, bail};
 use axum::extract::{Path, State};
@@ -96,11 +96,11 @@ pub(super) async fn emulators_page(State(state): State<AppState>) -> Page {
         .await?
     };
     let names = names(&offered);
-    let in_use: BTreeSet<&str> = settings
+    // (system, emulator) pairs: an emulator used for several systems keeps each one's saves apart.
+    let in_use: Vec<(&str, &str)> = settings
         .uses
-        .values()
-        .flatten()
-        .map(String::as_str)
+        .iter()
+        .flat_map(|(system, ids)| ids.iter().map(move |id| (system.as_str(), id.as_str())))
         .collect();
     let none: Vec<EmulatorInfo> = Vec::new();
     Ok(layout(
@@ -147,8 +147,9 @@ pub(super) async fn emulators_page(State(state): State<AppState>) -> Page {
                 "it: where their formats match they see the same save (Snes9x and bsnes both write "
                 "raw SRAM), where they don't each keeps its own file beside the others. Leave a box "
                 "empty to use the system's folder (shown greyed), or name another folder. An "
-                "emulator used for several systems keeps one folder, its first system's. Save states "
-                "are never shared: each emulator keeps its own."
+                "emulator used for several systems keeps each system's saves apart (for RetroArch "
+                "that needs a machine to sort saves by content folder). Save states are never "
+                "shared between emulators: each keeps its own, for every system it runs."
             }
             @if in_use.is_empty() {
                 p.muted { "Tick some emulators above first." }
@@ -156,9 +157,10 @@ pub(super) async fn emulators_page(State(state): State<AppState>) -> Page {
                 form method="post" action="/emulators/save-folders" {
                     datalist #save-folders { @for f in &existing_folders { option value=(f); } }
                     table.grid {
-                        tr { th { "Emulator" } th { "Save folder" } }
-                        @for id in &in_use {
+                        tr { th { "System" } th { "Emulator" } th { "Save folder" } }
+                        @for (system, id) in &in_use {
                             tr {
+                                td { (system) }
                                 td {
                                     @match names.get(id) {
                                         Some(e) => { (e.name) " " (kind_tag(e.kind)) }
@@ -166,9 +168,9 @@ pub(super) async fn emulators_page(State(state): State<AppState>) -> Page {
                                     }
                                 }
                                 td {
-                                    input name={"folder:" (id)} list="save-folders"
-                                        placeholder=(settings.default_save_folder(id))
-                                        value=[settings.save_folders.get(*id)];
+                                    input name={"folder:" (system) "/" (id)} list="save-folders"
+                                        placeholder=(Settings::default_save_folder(system))
+                                        value=[settings.save_folders.get(*system).and_then(|f| f.get(*id))];
                                 }
                             }
                         }
@@ -252,27 +254,41 @@ fn existing_save_folders(settings: &Settings) -> Vec<String> {
     out
 }
 
-/// Fields are `folder:<emulator id>` → folder name; empty clears the assignment.
+/// Fields are `folder:<system>/<emulator id>` → folder name; empty clears the assignment.
 pub(super) async fn save_folders_save(
     State(state): State<AppState>,
     Form(fields): Form<Vec<(String, String)>>,
 ) -> Page<Redirect> {
     let mut settings = state.settings()?;
     for (key, value) in fields {
-        let Some(id) = key.strip_prefix("folder:") else {
+        let Some((system, id)) = key
+            .strip_prefix("folder:")
+            .and_then(|pair| pair.split_once('/'))
+        else {
             continue;
         };
-        if !settings.uses.values().flatten().any(|e| e == id) {
-            return Err(anyhow!("{id} isn't an emulator in use").into());
+        if !settings
+            .uses
+            .get(system)
+            .is_some_and(|ids| ids.iter().any(|e| e == id))
+        {
+            return Err(anyhow!("{id} isn't an emulator in use for {system}").into());
         }
         let folder = value.trim();
-        if folder.is_empty() || folder == settings.default_save_folder(id) {
-            settings.save_folders.remove(id);
+        if folder.is_empty() || folder == Settings::default_save_folder(system) {
+            if let Some(folders) = settings.save_folders.get_mut(system) {
+                folders.remove(id);
+                if folders.is_empty() {
+                    settings.save_folders.remove(system);
+                }
+            }
         } else if !is_folder_name(folder) {
             return Err(anyhow!("{folder:?} isn't a plain folder name").into());
         } else {
             settings
                 .save_folders
+                .entry(system.to_string())
+                .or_default()
                 .insert(id.to_string(), folder.to_string());
         }
     }

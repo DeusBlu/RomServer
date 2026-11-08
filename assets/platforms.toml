@@ -16,14 +16,18 @@
 # Canonical sub-folders per standalone emulator. Every platform maps the same sub-folders to its
 # own local paths, so one canonical save folder lines up across platforms even when they name
 # things differently (RetroDECK's gc/dolphin/US is Dolphin's GC/USA). "" is the folder itself.
+# systems: slot → the system whose saves it holds, so each goes to that system's save folder
+# (Dolphin's Wii saves aren't GameCube saves). Slots not listed hold every system's saves.
 [emulators.duckstation]
 slots = [""]
 [emulators.pcsx2]
 slots = [""]
 [emulators.dolphin]
 slots = ["GC/EUR", "GC/USA", "GC/JAP", "Wii"]
+systems = { "GC/EUR" = "gc", "GC/USA" = "gc", "GC/JAP" = "gc", "Wii" = "wii" }
 [emulators.primehack]
 slots = ["GC/EUR", "GC/USA", "GC/JAP", "Wii"]
+systems = { "GC/EUR" = "gc", "GC/USA" = "gc", "GC/JAP" = "gc", "Wii" = "wii" }
 [emulators.ppsspp]
 slots = [""]
 [emulators.rpcs3]

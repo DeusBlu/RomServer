@@ -1,6 +1,7 @@
 //! Saves page: the save monitor's alerts (adopt or dismiss), and the "my save didn't carry
 //! over" check. A banner on every page points here while saves are stuck in views.
 
+use std::collections::BTreeSet;
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -18,33 +19,99 @@ use crate::catalog::{Alert, AlertKind, Catalog};
 use crate::monitor::{self, CheckReport};
 use crate::ops;
 
-/// How often the monitor walks the views. The timer is the source of truth: inotify misses
-/// changes that arrive over SMB.
-const INTERVAL: Duration = Duration::from_secs(60);
+/// How long machines' save folders must be quiet before a pass runs: an emulator may write a
+/// save in several pieces.
+const SETTLE: Duration = Duration::from_secs(2);
 
-/// Runs the monitor in the background for as long as the server runs. A pass is skipped while
-/// a file-changing operation holds the lock (an apply creates files before recording them).
+/// A full pass this often, for anything the watcher misses: writes that bypass `/mnt/user`
+/// (an Unraid share set to exclusive access), or an overflowing event queue.
+const INTERVAL: Duration = Duration::from_secs(600);
+
+/// Runs the monitor in the background for as long as the server runs. It reacts to changes in
+/// machines' save folders (`views/<node>/machine/`): Samba on Unraid writes through the same
+/// `/mnt/user` mount the container sees, so the kernel reports a save the moment a machine
+/// writes it (checked 2026-11-08: create, write, close and delete over SMB all arrived). A pass
+/// waits for any file-changing operation to finish first (an apply creates files before
+/// recording them).
 pub(super) fn spawn_monitor(state: AppState) {
+    let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<()>();
+    let watcher = notify::recommended_watcher(move |event: notify::Result<notify::Event>| {
+        let relevant = match event {
+            Ok(e) => !matches!(e.kind, notify::EventKind::Access(_)),
+            Err(_) => true, // a dropped event: run a pass to be sure
+        };
+        if relevant {
+            let _ = tx.send(());
+        }
+    });
+    let mut watcher = match watcher {
+        Ok(w) => Some(w),
+        Err(e) => {
+            println!("[monitor] can't watch for changes, checking every few minutes only: {e}");
+            None
+        }
+    };
     tokio::spawn(async move {
         let mut ticker = tokio::time::interval(INTERVAL);
+        let mut watched: BTreeSet<PathBuf> = BTreeSet::new();
         loop {
-            ticker.tick().await;
-            let Ok(guard) = state.busy.clone().try_lock_owned() else {
-                continue;
-            };
+            tokio::select! {
+                _ = ticker.tick() => {}
+                Some(()) = rx.recv() => {
+                    // Wait until the writes have settled.
+                    while let Ok(Some(())) = tokio::time::timeout(SETTLE, rx.recv()).await {}
+                }
+            }
+            let guard = state.busy.clone().lock_owned().await;
             let st = state.clone();
             let result = tokio::task::spawn_blocking(move || {
                 let _guard = guard;
                 let settings = st.settings()?;
                 let mut db = Catalog::open(&settings.database)?;
-                monitor::refresh(&settings, &mut db)
+                monitor::refresh(&settings, &mut db)?;
+                Ok::<_, anyhow::Error>(watch_roots(&settings))
             })
             .await;
-            if let Ok(Err(e)) = result {
-                println!("[monitor] {e:#}");
+            match result {
+                Ok(Ok(roots)) => {
+                    if let Some(w) = watcher.as_mut() {
+                        update_watches(w, &mut watched, roots);
+                    }
+                }
+                Ok(Err(e)) => println!("[monitor] {e:#}"),
+                Err(e) => println!("[monitor] {e}"),
             }
         }
     });
+}
+
+/// The folders the watcher follows: each machine's save and state projections.
+fn watch_roots(settings: &crate::settings::Settings) -> BTreeSet<PathBuf> {
+    settings
+        .nodes
+        .keys()
+        .map(|n| settings.view_root(n).join(crate::saves::VIEW_MACHINE))
+        .filter(|p| p.is_dir())
+        .collect()
+}
+
+/// Follows new machines' folders and stops following removed ones.
+fn update_watches(
+    watcher: &mut notify::RecommendedWatcher,
+    watched: &mut BTreeSet<PathBuf>,
+    roots: BTreeSet<PathBuf>,
+) {
+    use notify::Watcher as _;
+    for gone in watched.difference(&roots) {
+        let _ = watcher.unwatch(gone);
+    }
+    for new in roots.difference(watched) {
+        if let Err(e) = watcher.watch(new, notify::RecursiveMode::Recursive) {
+            println!("[monitor] can't watch {}: {e}", new.display());
+        }
+    }
+    watched.retain(|p| roots.contains(p));
+    watched.extend(roots);
 }
 
 fn when(unix: i64) -> String {

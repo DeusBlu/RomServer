@@ -8,8 +8,9 @@ use std::path::{Path, PathBuf};
 
 use anyhow::Result;
 
-use crate::emulators::{EmulatorInfo, Kind};
-use crate::platforms::{self, Mounter, RetroArchSort, VIEW_ROMS};
+use crate::emulators::EmulatorInfo;
+use crate::platforms::{self, Mounter, VIEW_ROMS};
+use crate::saves;
 use crate::settings::{Node, Protocol, Settings};
 use crate::shares::{self, Remote, ShareInfo};
 
@@ -19,13 +20,6 @@ pub enum MountKind {
     Media,
     Saves,
     States,
-}
-
-impl MountKind {
-    /// Whether existing local files are copied into the share when the mount is installed.
-    fn imports_local_files(self) -> bool {
-        matches!(self, MountKind::Saves | MountKind::States)
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -93,154 +87,32 @@ pub fn plan_mounts(
             server: view.join(media_dir),
         });
     }
-    let sort = node.retroarch_sort.unwrap_or(platform.retroarch_sort);
-    let name = |id: &str| emulators.get(id).map_or(id.to_string(), |e| e.name.clone());
-
-    // RetroArch cores, grouped the way RetroArch arranges their files on this machine.
-    let cores: Vec<(&str, &str)> = node
-        .uses
-        .iter()
-        .flat_map(|(system, ids)| ids.iter().map(move |id| (system.as_str(), id.as_str())))
-        .filter(|(_, id)| emulators.get(id).is_some_and(|e| e.kind == Kind::RetroArch))
-        .collect();
-    for (kind, ra_root, canonical_root) in [
-        (
-            MountKind::Saves,
-            &platform.retroarch_saves,
-            settings.saves_root(),
-        ),
-        (
-            MountKind::States,
-            &platform.retroarch_states,
-            settings.states_root(),
-        ),
-    ] {
-        if kind == MountKind::States && !node.sync_states {
+    // Saves and states: each machine folder is mounted from its place in the view, where
+    // RomServer projects the library's saves into the shape this machine's emulators expect.
+    // The view mirrors the machine's paths, so a folder inside another is covered by the outer
+    // one's mount.
+    let (dirs, save_warnings) = saves::save_dirs(settings, node_name, emulators)?;
+    warnings.extend(save_warnings);
+    let mut outermost: Vec<&saves::SaveDir> = Vec::new();
+    let mut by_depth: Vec<&saves::SaveDir> = dirs.iter().collect();
+    by_depth.sort_by_key(|d| d.local.components().count());
+    for dir in by_depth {
+        if outermost.iter().any(|o| dir.local.starts_with(&o.local)) {
             continue;
         }
-        let what = if kind == MountKind::Saves {
-            "Saves"
-        } else {
-            "States"
-        };
-        // Saves go to the assigned folder; states always to the emulator's own.
-        let folder = |id: &str| -> String {
-            match kind {
-                MountKind::Saves => settings.save_folder(id).to_string(),
-                _ => id.to_string(),
-            }
-        };
-        let ra_root = local(ra_root);
-        let mut groups: BTreeMap<PathBuf, (String, BTreeSet<String>, BTreeSet<String>)> =
-            BTreeMap::new();
-        for (system, id) in &cores {
-            let (local_dir, group_label) = match sort {
-                RetroArchSort::Core => match emulators.get(id).and_then(|e| e.corename.clone()) {
-                    Some(core) => (ra_root.join(&core), core),
-                    None => {
-                        warnings.push(format!("{}: no RetroArch core name known", name(id)));
-                        continue;
-                    }
-                },
-                RetroArchSort::Content => {
-                    let dir = layout.folder(system).to_string();
-                    (ra_root.join(&dir), format!("RetroArch, {dir}"))
-                }
-                RetroArchSort::None => (ra_root.clone(), "RetroArch".to_string()),
-            };
-            let entry = groups
-                .entry(local_dir)
-                .or_insert_with(|| (group_label, BTreeSet::new(), BTreeSet::new()));
-            entry.1.insert(folder(id));
-            entry.2.insert(name(id));
-        }
-        for (local_dir, (group_label, folders, names)) in groups {
-            let names = names.into_iter().collect::<Vec<_>>().join(", ");
-            if folders.len() > 1 {
-                let folders = folders.into_iter().collect::<Vec<_>>().join(", ");
-                warnings.push(match kind {
-                    MountKind::Saves => format!(
-                        "{group_label}: {names} share one RetroArch folder on this machine but are \
-                         assigned different save folders ({folders}). Assign them one folder, or \
-                         sort RetroArch's saves by core. Not mounted."
-                    ),
-                    _ => format!(
-                        "{group_label}: {names} share one RetroArch state folder on this machine; \
-                         states are kept per emulator, so sort RetroArch's states by core. Not mounted."
-                    ),
-                });
-                continue;
-            }
-            let folder = folders.into_iter().next().expect("group has a core");
-            let label = match sort {
-                RetroArchSort::Core => format!("{what}: {names}"),
-                _ => format!("{what}: {group_label} ({names})"),
-            };
-            wanted.push(Wanted {
-                kind,
-                label,
-                local: local_dir,
-                server: canonical_root.join(folder),
-            });
-        }
+        outermost.push(dir);
     }
-
-    // Standalone and custom emulators: the platform's known paths per slot.
-    let standalone: BTreeSet<&str> = node
-        .uses
-        .values()
-        .flatten()
-        .map(String::as_str)
-        .filter(|id| !emulators.get(id).is_some_and(|e| e.kind == Kind::RetroArch))
-        .collect();
-    for id in standalone {
-        for (kind, table, canonical) in [
-            (
-                MountKind::Saves,
-                &platform.saves,
-                settings.saves_root().join(settings.save_folder(id)),
-            ),
-            (
-                MountKind::States,
-                &platform.states,
-                settings.states_root().join(id),
-            ),
-        ] {
-            if kind == MountKind::States && !node.sync_states {
-                continue;
-            }
-            let what = if kind == MountKind::Saves {
-                "Saves"
-            } else {
-                "States"
-            };
-            let Some(slots) = table.get(id) else {
-                if kind == MountKind::Saves {
-                    warnings.push(format!(
-                        "{}: RomServer doesn't know where it keeps saves on {}. Not mounted.",
-                        name(id),
-                        platform.label
-                    ));
-                }
-                continue;
-            };
-            for (slot, template) in slots {
-                let label = match slot.as_str() {
-                    "" => format!("{what}: {}", name(id)),
-                    slot => format!("{what}: {} {slot}", name(id)),
-                };
-                let server = match slot.as_str() {
-                    "" => canonical.clone(),
-                    slot => canonical.join(slot),
-                };
-                wanted.push(Wanted {
-                    kind,
-                    label,
-                    local: local(template),
-                    server,
-                });
-            }
-        }
+    outermost.sort_by(|a, b| a.local.cmp(&b.local));
+    for dir in outermost {
+        wanted.push(Wanted {
+            kind: match dir.kind {
+                saves::SaveKind::Saves => MountKind::Saves,
+                saves::SaveKind::States => MountKind::States,
+            },
+            label: dir.label.clone(),
+            local: dir.local.clone(),
+            server: view.join(dir.view_path()),
+        });
     }
 
     let (shares, _) = shares::effective(settings);
@@ -437,88 +309,102 @@ fn unit_files(plan: &MountPlan, mount: &Mount) -> UnitFiles {
     }
 }
 
+/// The line every unit RomServer writes for a machine starts with; `uninstall` finds them by it,
+/// so units from an earlier platform or plan are removed too.
+fn unit_marker(node: &str) -> String {
+    format!("# Generated by RomServer for {node}:")
+}
+
 /// One shell script that installs (or with `uninstall`, removes) every unit for the machine.
-/// Existing local save files are moved aside and copied into the share without overwriting.
+/// It writes unit files and creates empty mount points, nothing else: it never moves, copies
+/// or deletes a file, and refuses to mount over a folder that has files in it.
 pub fn systemd_script(plan: &MountPlan, generated: &str) -> String {
     let mut s = String::new();
-    let units_dir = &plan.units_dir;
+    let units: Vec<(&Mount, UnitFiles)> = plan
+        .mounts
+        .iter()
+        .map(|m| (m, unit_files(plan, m)))
+        .collect();
+    let file = format!("romserver-{}.sh", plan.node);
     let _ = writeln!(
         s,
         "#!/bin/sh\n\
          # RomServer mounts for {node} ({platform}), generated {generated}.\n\
          #\n\
          #   sudo sh {file}            install and start the automounts\n\
-         #   sudo sh {file} uninstall  stop and remove them (local folders are left alone)\n\
+         #   sudo sh {file} uninstall  stop and remove every RomServer mount for {node}\n\
          #\n\
+         # It writes a .mount and an .automount unit for each folder below into {units_dir},\n\
+         # creates any missing mount point (owned by {uid}:{gid}), and on SteamOS lists the\n\
+         # .automount units in {keep} so OS updates keep them.\n\
+         # It never moves, copies or deletes a file, and nothing on the server is changed.\n\
+         #\n\
+         # On this machine  <-  from the server",
+        node = plan.node,
+        platform = plan.platform_label,
+        units_dir = plan.units_dir,
+        uid = plan.uid,
+        gid = plan.gid,
+        keep = keep_file(&plan.node),
+    );
+    for (mount, _) in &units {
+        let _ = writeln!(
+            s,
+            "#   {}  <-  {}",
+            mount.local.display(),
+            mount.remote.what
+        );
+    }
+    let _ = writeln!(
+        s,
+        "#\n\
          # Automounts are the safety net: if the server is unreachable, using a mount point\n\
          # fails instead of quietly writing to the local disk underneath.\n\
          set -eu\n\
          UNITS_DIR={units_dir}\n\
-         STAMP=$(date +%Y%m%d-%H%M%S)\n\
-         [ \"$(id -u)\" = 0 ] || {{ echo 'run as root (sudo)' >&2; exit 1; }}\n",
-        node = plan.node,
-        platform = plan.platform_label,
-        file = format_args!("romserver-{}.sh", plan.node),
-        units_dir = sh_quote(units_dir),
-    );
-    let units: Vec<(&Mount, UnitFiles)> = plan
-        .mounts
-        .iter()
-        .map(|m| (m, unit_files(plan, m)))
-        .collect();
-    let automounts: Vec<String> = units
-        .iter()
-        .map(|(_, u)| sh_quote(&u.automount_name))
-        .collect();
-    let all_units: Vec<String> = units
-        .iter()
-        .flat_map(|(_, u)| [sh_quote(&u.mount_name), sh_quote(&u.automount_name)])
-        .collect();
-    let _ = writeln!(
-        s,
-        "if [ \"${{1:-}}\" = uninstall ]; then\n\
-         \x20   systemctl disable --now {automounts} 2>/dev/null || true\n\
-         \x20   for u in {units}; do systemctl stop \"$u\" 2>/dev/null || true; rm -f \"$UNITS_DIR/$u\"; done\n\
+         KEEP={keep}\n\
+         MARKER={marker}\n\
+         [ \"$(id -u)\" = 0 ] || {{ echo 'run as root (sudo)' >&2; exit 1; }}\n\
+         \n\
+         if [ \"${{1:-}}\" = uninstall ]; then\n\
+         \x20   REMOVED=0\n\
+         \x20   for path in \"$UNITS_DIR\"/*.automount \"$UNITS_DIR\"/*.mount; do\n\
+         \x20       [ -f \"$path\" ] && grep -qF \"$MARKER\" \"$path\" || continue\n\
+         \x20       unit=$(basename \"$path\")\n\
+         \x20       case \"$unit\" in *.automount) systemctl disable --quiet \"$unit\" 2>/dev/null || true ;; esac\n\
+         \x20       systemctl stop \"$unit\" 2>/dev/null || true\n\
+         \x20       rm -f \"$path\"\n\
+         \x20       REMOVED=$((REMOVED + 1))\n\
+         \x20   done\n\
+         \x20   rm -f \"$KEEP\"\n\
          \x20   systemctl daemon-reload\n\
-         \x20   echo 'RomServer mounts removed.'\n\
+         \x20   echo \"Removed $REMOVED RomServer unit files for {node}. Local folders were left alone.\"\n\
          \x20   exit 0\n\
-         fi\n",
-        automounts = automounts.join(" "),
-        units = all_units.join(" "),
-    );
-    let _ = writeln!(
-        s,
-        "# Refuse to start while anything else mounts these paths (an old fstab line, say):\n\
-         # two mounts on one path would hide each other.\n\
-         CONFLICTS=0\n\
+         fi\n\
+         \n\
+         # Check everything before changing anything.\n\
+         PROBLEMS=0\n\
          check() {{\n\
          \x20   if findmnt -s -n --mountpoint \"$1\" >/dev/null 2>&1; then\n\
          \x20       echo \"/etc/fstab already mounts $1: remove that line, then run: systemctl daemon-reload; umount '$1'\" >&2\n\
-         \x20       CONFLICTS=1\n\
-         \x20   elif mountpoint -q \"$1\" 2>/dev/null && ! systemctl is-active -q \"$2\" 2>/dev/null; then\n\
+         \x20       PROBLEMS=1\n\
+         \x20   elif mountpoint -q \"$1\" 2>/dev/null; then\n\
+         \x20       systemctl is-active -q \"$2\" 2>/dev/null && return\n\
          \x20       echo \"$1 is already mounted by something else: unmount it first\" >&2\n\
-         \x20       CONFLICTS=1\n\
-         \x20   fi\n\
-         }}\n\
-         \n\
-         # prepare MOUNT_POINT IMPORT: make the mount point; set a non-empty one aside first.\n\
-         IMPORTS=''\n\
-         prepare() {{\n\
-         \x20   if mountpoint -q \"$1\" 2>/dev/null; then\n\
-         \x20       return\n\
-         \x20   fi\n\
-         \x20   if [ -d \"$1\" ] && [ -n \"$(ls -A \"$1\" 2>/dev/null)\" ]; then\n\
-         \x20       mv \"$1\" \"$1.romserver-local-$STAMP\"\n\
-         \x20       echo \"moved existing $1 aside to $1.romserver-local-$STAMP\"\n\
-         \x20       if [ \"$2\" = import ]; then\n\
-         \x20           IMPORTS=\"$IMPORTS\n$1\"\n\
+         \x20       PROBLEMS=1\n\
+         \x20   elif [ -d \"$1\" ]; then\n\
+         \x20       # Empty folders (a frontend's ready-made system folders) are fine; files aren't.\n\
+         \x20       FILES=$(find \"$1\" -mindepth 1 ! -type d 2>/dev/null | wc -l)\n\
+         \x20       if [ \"$FILES\" -gt 0 ]; then\n\
+         \x20           echo \"$1 has $FILES file(s) in it, which the mount would hide. Move them somewhere else and run this again; then copy them into $1 and RomServer brings them into the library without overwriting anything.\" >&2\n\
+         \x20           PROBLEMS=1\n\
          \x20       fi\n\
          \x20   fi\n\
-         \x20   mkdir -p \"$1\"\n\
-         \x20   chown {uid}:{gid} \"$1\" 2>/dev/null || true\n\
-         }}\n",
-        uid = plan.uid,
-        gid = plan.gid,
+         }}",
+        units_dir = sh_quote(&plan.units_dir),
+        keep = sh_quote(&keep_file(&plan.node)),
+        marker = sh_quote(&unit_marker(&plan.node)),
+        node = plan.node,
     );
     for (mount, u) in &units {
         let _ = writeln!(
@@ -530,21 +416,26 @@ pub fn systemd_script(plan: &MountPlan, generated: &str) -> String {
     }
     let _ = writeln!(
         s,
-        "if [ \"$CONFLICTS\" = 1 ]; then\n\
+        "if [ \"$PROBLEMS\" = 1 ]; then\n\
          \x20   echo 'Nothing was changed.' >&2\n\
          \x20   exit 1\n\
-         fi\n"
+         fi\n\
+         \n\
+         # Missing mount points (and any missing folders above them) belong to the machine's user.\n\
+         mountpoint_dir() {{\n\
+         \x20   [ -d \"$1\" ] && return\n\
+         \x20   mountpoint_dir \"$(dirname \"$1\")\"\n\
+         \x20   mkdir \"$1\"\n\
+         \x20   chown {uid}:{gid} \"$1\"\n\
+         }}",
+        uid = plan.uid,
+        gid = plan.gid,
     );
     for (mount, _) in &units {
-        let import = if mount.kind.imports_local_files() {
-            "import"
-        } else {
-            "keep"
-        };
         let _ = writeln!(
             s,
-            "prepare {} {import}",
-            sh_quote(&mount.local.to_string_lossy())
+            "mountpoint -q {local} 2>/dev/null || mountpoint_dir {local}",
+            local = sh_quote(&mount.local.to_string_lossy())
         );
     }
     s.push('\n');
@@ -560,22 +451,57 @@ pub fn systemd_script(plan: &MountPlan, generated: &str) -> String {
             );
         }
     }
+    // SteamOS replaces /etc on every update, keeping only what its keep lists name; .mount
+    // units and the enable links are on its own list, .automount units aren't.
     let _ = writeln!(
         s,
-        "\nsystemctl daemon-reload\n\
-         systemctl enable --now {automounts}\n\
+        "\nKEPT=0\n\
+         if [ -f /usr/lib/rauc/atomic-update-keep.conf ]; then\n\
+         \x20   mkdir -p \"$(dirname \"$KEEP\")\"\n\
+         \x20   cat > \"$KEEP\" <<'ROMSERVER_KEEP'"
+    );
+    for (_, u) in &units {
+        let _ = writeln!(s, "{}/{}", plan.units_dir, u.automount_name);
+    }
+    let automounts: Vec<String> = units
+        .iter()
+        .map(|(_, u)| sh_quote(&u.automount_name))
+        .collect();
+    let _ = writeln!(
+        s,
+        "ROMSERVER_KEEP\n\
+         \x20   KEPT=1\n\
+         fi\n\
          \n\
-         # Copy saves that were on this machine into the share, never overwriting what's there.\n\
-         # The originals stay in the .romserver-local-* folders until you delete them.\n\
-         printf '%s\\n' \"$IMPORTS\" | while IFS= read -r dir; do\n\
-         \x20   [ -n \"$dir\" ] || continue\n\
-         \x20   cp -rn --preserve=timestamps \"$dir.romserver-local-$STAMP/.\" \"$dir/\" \\\n\
-         \x20       && echo \"imported $dir\" || echo \"could not import $dir; originals kept\" >&2\n\
-         done\n\
-         echo 'RomServer mounts installed.'",
+         systemctl daemon-reload\n\
+         systemctl enable --now --quiet {automounts}\n\
+         \n\
+         echo 'RomServer mounts for {node} are installed:'",
         automounts = automounts.join(" "),
+        node = plan.node,
+    );
+    for (mount, _) in &units {
+        let _ = writeln!(
+            s,
+            "echo {}",
+            sh_quote(&format!(
+                "  {}  <-  {}",
+                mount.local.display(),
+                mount.remote.what
+            ))
+        );
+    }
+    let _ = writeln!(
+        s,
+        "[ \"$KEPT\" = 1 ] && echo \"SteamOS: listed in $KEEP, so OS updates keep them.\"\n\
+         echo 'Nothing was moved, copied or deleted, and nothing on the server was changed.'"
     );
     s
+}
+
+/// SteamOS's keep list for a machine's units.
+fn keep_file(node: &str) -> String {
+    format!("/etc/atomic-update.conf.d/romserver-{node}.conf")
 }
 
 /// Batocera/Knulli: no systemd. ROMs come from batocera-boot.conf (its own network share
@@ -662,6 +588,8 @@ pub fn script(plan: &MountPlan, generated: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::emulators::Kind;
+    use crate::platforms::RetroArchSort;
     use crate::settings::{Share, Uses};
 
     #[test]
@@ -702,8 +630,6 @@ mod tests {
             },
         );
         s.network.unraid_share_config = None;
-        s.save_folders
-            .insert("ra-snes9x".into(), "snes-saves".into());
         s
     }
 
@@ -758,11 +684,12 @@ mod tests {
         desktop.credentials = Some("/home/deus/.smbcredentials-carrier".into());
         let p = plan(&s, "desktop");
         assert!(p.warnings.is_empty(), "{:?}", p.warnings);
+        // Saves are mounted from the view, which mirrors the machine's own paths.
         assert_eq!(
             find(&p, "/home/deus/.config/retroarch/saves/Snes9x")
                 .remote
                 .what,
-            "//192.168.1.1/ROMS/saves/snes-saves"
+            "//192.168.1.1/views/desktop/machine/home/deus/.config/retroarch/saves/Snes9x"
         );
         assert_eq!(
             find(&p, "/home/deus/ROMs").remote.what,
@@ -774,7 +701,16 @@ mod tests {
         );
         assert_eq!(
             find(&p, "/home/deus/.config/PCSX2/memcards").server,
-            Path::new("/mnt/user/ROMS/saves/ps2-saves")
+            Path::new("/mnt/user/views/desktop/machine/home/deus/.config/PCSX2/memcards")
+        );
+        // … filled from the library's folders for each system and emulator.
+        assert_eq!(
+            libraries(&s, "desktop", "/home/deus/.config/retroarch/saves/Snes9x"),
+            ["/mnt/user/ROMS/saves/snes-saves"]
+        );
+        assert_eq!(
+            libraries(&s, "desktop", "/home/deus/.config/PCSX2/memcards"),
+            ["/mnt/user/ROMS/saves/ps2-saves"]
         );
         assert!(
             p.options
@@ -782,19 +718,84 @@ mod tests {
         );
         let script = systemd_script(&p, "now");
         assert!(script.contains("home-deus-.config-retroarch-saves-Snes9x.automount"));
-        assert!(script.contains("What=//192.168.1.1/ROMS/saves/snes-saves"));
+        assert!(script.contains(
+            "What=//192.168.1.1/views/desktop/machine/home/deus/.config/retroarch/saves/Snes9x"
+        ));
+    }
+
+    #[test]
+    fn the_installer_only_writes_units_and_never_touches_files() {
+        let mut s = settings();
+        let desktop = s.nodes.get_mut("desktop").unwrap();
+        desktop.home = Some("/home/deus".into());
+        let p = plan(&s, "desktop");
+        let script = systemd_script(&p, "now");
+        // It is valid sh.
+        let path = std::env::temp_dir().join(format!("romserver-test-{}.sh", std::process::id()));
+        std::fs::write(&path, &script).unwrap();
+        let syntax = std::process::Command::new("sh")
+            .arg("-n")
+            .arg(&path)
+            .output()
+            .unwrap();
+        std::fs::remove_file(&path).unwrap();
+        assert!(
+            syntax.status.success(),
+            "{}",
+            String::from_utf8_lossy(&syntax.stderr)
+        );
+        // No moving, copying or deleting files; a folder with files in it stops the install.
+        for forbidden in ["mv ", "cp ", "rm -rf", "romserver-local"] {
+            assert!(!script.contains(forbidden), "{forbidden} in:\n{script}");
+        }
+        assert!(script.contains("which the mount would hide"));
+        assert!(script.contains("systemctl enable --now --quiet"));
+        // SteamOS keeps the automount units through updates.
+        assert!(script.contains("/etc/atomic-update.conf.d/romserver-desktop.conf"));
+        assert!(
+            script.contains(
+                "/etc/systemd/system/home-deus-.config-retroarch-saves-Snes9x.automount\n"
+            )
+        );
+        // Uninstall finds every unit generated for this machine by its marker line.
+        assert!(script.contains("'# Generated by RomServer for desktop:'"));
+        for mount in &p.mounts {
+            assert!(script.contains(&format!(
+                "  {}  <-  {}",
+                mount.local.display(),
+                mount.remote.what
+            )));
+        }
+    }
+
+    /// The library folders that fill one of a machine's save folders.
+    fn libraries(s: &Settings, node: &str, local: &str) -> Vec<String> {
+        let infos = catalog();
+        let index: HashMap<&str, &EmulatorInfo> =
+            infos.iter().map(|e| (e.id.as_str(), e)).collect();
+        let (dirs, _) = saves::save_dirs(s, node, &index).unwrap();
+        let dir = dirs
+            .iter()
+            .find(|d| d.local == Path::new(local))
+            .unwrap_or_else(|| panic!("no save folder {local}: {dirs:#?}"));
+        dir.libraries()
+            .iter()
+            .map(|p| p.display().to_string())
+            .collect()
     }
 
     #[test]
     fn retrodeck_sorts_retroarch_by_system_and_maps_dolphin_regions() {
         let mut s = settings();
-        s.uses.insert("gc".into(), vec!["dolphin".into()]);
-        s.systems.insert(
-            "gc".into(),
-            crate::settings::System {
-                folder: "GC".into(),
-            },
-        );
+        for (system, folder) in [("gc", "GC"), ("wii", "Wii")] {
+            s.uses.insert(system.into(), vec!["dolphin".into()]);
+            s.systems.insert(
+                system.into(),
+                crate::settings::System {
+                    folder: folder.into(),
+                },
+            );
+        }
         let mut node = Node::new("retrodeck", Default::default());
         node.uses = Uses::from([
             ("snes".into(), vec!["ra-snes9x".into()]),
@@ -802,19 +803,91 @@ mod tests {
         ]);
         s.nodes.insert("deck".into(), node);
         let p = plan(&s, "deck");
+        assert!(p.warnings.is_empty(), "{:?}", p.warnings);
         assert_eq!(
             find(&p, "/home/deck/retrodeck/saves/snes").server,
-            Path::new("/mnt/user/ROMS/saves/snes-saves")
+            Path::new("/mnt/user/views/deck/machine/home/deck/retrodeck/saves/snes")
         );
         assert_eq!(
-            find(&p, "/home/deck/retrodeck/saves/gc/dolphin/US").server,
-            Path::new("/mnt/user/ROMS/saves/gc/GC/USA")
+            libraries(&s, "deck", "/home/deck/retrodeck/saves/snes"),
+            ["/mnt/user/ROMS/saves/snes-saves"]
+        );
+        assert_eq!(
+            libraries(&s, "deck", "/home/deck/retrodeck/saves/gc/dolphin/US"),
+            ["/mnt/user/ROMS/saves/gc/GC/USA"]
         );
         assert_eq!(find(&p, "/home/deck/retrodeck/roms").kind, MountKind::Roms);
+        // Dolphin isn't used for Wii here, so its Wii slot isn't mounted.
+        assert!(
+            !p.mounts
+                .iter()
+                .any(|m| m.local == Path::new("/home/deck/retrodeck/saves/wii/dolphin"))
+        );
+
+        // Used for Wii too: Wii saves come from Wii's folder, not GameCube's.
+        let deck = s.nodes.get_mut("deck").unwrap();
+        deck.uses.insert("wii".into(), vec!["dolphin".into()]);
+        let p = plan(&s, "deck");
+        find(&p, "/home/deck/retrodeck/saves/wii/dolphin");
+        assert_eq!(
+            libraries(&s, "deck", "/home/deck/retrodeck/saves/wii/dolphin"),
+            ["/mnt/user/ROMS/saves/wii/Wii"]
+        );
     }
 
     #[test]
-    fn one_unsorted_retroarch_folder_needs_one_save_folder() {
+    fn one_core_for_two_systems_is_one_folder_fed_by_both() {
+        let mut s = settings();
+        let mut node = Node::new("es-de", Default::default());
+        node.home = Some("/home/deus".into());
+        node.sync_states = true;
+        node.uses = Uses::from([
+            ("genesis".into(), vec!["ra-genesis_plus_gx".into()]),
+            ("segacd".into(), vec!["ra-genesis_plus_gx".into()]),
+        ]);
+        s.nodes.insert("desk".into(), node);
+
+        // Sorted by core (RetroArch's default), the core's one folder shows both systems'
+        // saves; the library keeps them apart.
+        let p = plan(&s, "desk");
+        assert!(p.warnings.is_empty(), "{:?}", p.warnings);
+        let saves = "/home/deus/.config/retroarch/saves/Genesis Plus GX";
+        find(&p, saves);
+        assert_eq!(
+            libraries(&s, "desk", saves),
+            [
+                "/mnt/user/ROMS/saves/genesis",
+                "/mnt/user/ROMS/saves/segacd"
+            ]
+        );
+        // States are kept per emulator: one library folder for both.
+        assert_eq!(
+            libraries(
+                &s,
+                "desk",
+                "/home/deus/.config/retroarch/states/Genesis Plus GX"
+            ),
+            ["/mnt/user/ROMS/states/ra-genesis_plus_gx"]
+        );
+
+        // Sorted by content folder, each system's folder is fed by its own library folder.
+        s.nodes.get_mut("desk").unwrap().retroarch_sort = Some(RetroArchSort::Content);
+        let platforms = platforms::bundled();
+        let layout = platforms.layout(platforms.platform("es-de").unwrap());
+        for system in ["genesis", "segacd"] {
+            let local = format!(
+                "/home/deus/.config/retroarch/saves/{}",
+                layout.folder(system)
+            );
+            assert_eq!(
+                libraries(&s, "desk", &local),
+                [format!("/mnt/user/ROMS/saves/{system}")]
+            );
+        }
+    }
+
+    #[test]
+    fn one_unsorted_retroarch_folder_is_fed_by_every_core() {
         let mut s = settings();
         let mut node = Node::new("emudeck", Default::default());
         node.uses = Uses::from([
@@ -823,23 +896,18 @@ mod tests {
         ]);
         s.nodes.insert("deck".into(), node);
         let p = plan(&s, "deck");
-        assert!(
-            p.warnings
-                .iter()
-                .any(|w| w.contains("assigned different save folders")),
-            "{:?}",
-            p.warnings
-        );
-        s.save_folders
-            .insert("ra-genesis_plus_gx".into(), "snes-saves".into());
-        let p = plan(&s, "deck");
+        assert!(p.warnings.is_empty(), "{:?}", p.warnings);
+        let local = "/home/deck/.var/app/org.libretro.RetroArch/config/retroarch/saves";
         assert_eq!(
-            find(
-                &p,
-                "/home/deck/.var/app/org.libretro.RetroArch/config/retroarch/saves"
-            )
-            .server,
-            Path::new("/mnt/user/ROMS/saves/snes-saves")
+            find(&p, local).server,
+            Path::new("/mnt/user/views/deck/machine").join(&local[1..])
+        );
+        assert_eq!(
+            libraries(&s, "deck", local),
+            [
+                "/mnt/user/ROMS/saves/genesis",
+                "/mnt/user/ROMS/saves/snes-saves"
+            ]
         );
     }
 
@@ -865,11 +933,15 @@ mod tests {
                 .iter()
                 .any(|w| w.contains("doesn't know where it keeps saves"))
         );
+        // Saves are mounted from the view too, so without the views share they can't be.
         assert!(
-            p.mounts
+            p.warnings
                 .iter()
-                .any(|m| m.local == Path::new("/home/pi/RetroPie/saves/Snes9x"))
+                .any(|w| w.starts_with("Saves: Snes9x") && w.contains("Not mounted")),
+            "{:?}",
+            p.warnings
         );
+        assert!(p.mounts.is_empty(), "{:#?}", p.mounts);
     }
 
     #[test]
