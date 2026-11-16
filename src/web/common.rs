@@ -99,8 +99,9 @@ pub(super) fn shell(title: &str, with_nav: bool, body: Markup) -> Markup {
                 }
                 main {
                     @if with_nav {
-                        // The save monitor's banner, filled in after the page loads.
-                        div hx-get="/saves/banner" hx-trigger="load" hx-swap="innerHTML" {}
+                        // The monitor's banner (new media, stray saves): filled in after the
+                        // page loads and kept current while it stays open.
+                        div hx-get="/saves/banner" hx-trigger="load, every 20s" hx-swap="innerHTML" {}
                     }
                     h1 { (title) }
                     (body)

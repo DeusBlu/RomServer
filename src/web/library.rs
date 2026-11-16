@@ -12,6 +12,7 @@ use serde::Deserialize;
 
 use super::AppState;
 use super::common::{Page, blocking, busy_guard, layout, settings_or_notice, spinner};
+use super::jobs;
 use crate::cuefix::{self, Verdict};
 use crate::platforms::MEDIA_TYPES;
 use crate::settings::{Settings, System, is_plain_id, is_plain_relative};
@@ -395,6 +396,7 @@ pub(super) async fn media_plan(State(state): State<AppState>, Form(form): Form<M
                 }
             }
             form hx-post="/library/media/import" hx-target="#media" hx-indicator="#media-spin"
+                hx-disabled-elt="find button"
                 hx-confirm={"Import " (form.system) "'s existing media?"} {
                 input type="hidden" name="system" value=(form.system);
                 input type="hidden" name="expected" value=(plan.auto.len());
@@ -457,7 +459,6 @@ pub(super) async fn media_import(
     State(state): State<AppState>,
     Form(fields): Form<Vec<(String, String)>>,
 ) -> Page {
-    let _guard = busy_guard(&state)?;
     let settings = state.settings()?;
     let fields: HashMap<String, String> = fields.into_iter().collect();
     let system = fields.get("system").cloned().context("missing system")?;
@@ -470,7 +471,7 @@ pub(super) async fn media_import(
         .and_then(|v| v.parse().ok())
         .context("missing expected duplicate count")?;
     let sys = system.clone();
-    let (imported, discarded, log, projected) = blocking(move || {
+    jobs::start(&state, format!("Importing {system}'s media"), move |progress| {
         if !settings.systems.contains_key(&sys) {
             bail!("no system {sys}");
         }
@@ -516,34 +517,24 @@ pub(super) async fn media_import(
             };
             decided.push((item.clone(), decision));
         }
-        let (imported, discarded, log) =
-            media::apply_existing(&settings, &sys, &plan.auto, &plan.duplicates, &decided)?;
+        let (imported, discarded, log) = media::apply_existing(
+            &settings,
+            &sys,
+            &plan.auto,
+            &plan.duplicates,
+            &decided,
+            progress,
+        )?;
         let mut catalog = crate::catalog::Catalog::open(&settings.database)?;
-        let projected: Vec<(String, String)> = settings
-            .nodes
-            .keys()
-            .map(|node| {
-                let result = match ops::apply_additions(&settings, &mut catalog, node) {
-                    Ok((added, relinked)) => format!("{added} added, {relinked} relinked"),
-                    Err(e) => format!("not updated: {e:#}"),
-                };
-                (node.clone(), result)
-            })
-            .collect();
-        Ok((imported, discarded, log, projected))
-    })
-    .await?;
-    Ok(html! {
-        div.notice.ok {
-            (system) ": imported " (imported) ", discarded " (discarded) ". Undo log: " code { (log.display()) }
-        }
-        @if !projected.is_empty() {
-            table.grid {
-                tr { th { "Machine" } th { "View" } }
-                @for (node, result) in &projected { tr { td { (node) } td { (result) } } }
+        let projected = super::machines::project_everywhere(&settings, &mut catalog, progress);
+        Ok(html! {
+            div.notice.ok {
+                (sys) ": imported " (imported) ", discarded " (discarded) ". Undo log: "
+                code { (log.display()) }
             }
-        }
-        p.muted.small { "Files you left are still there; look again any time." }
+            @if !projected.is_empty() { (super::machines::projected_table(&projected)) }
+            p.muted.small { "Files you left are still there; look again any time." }
+        })
     })
 }
 

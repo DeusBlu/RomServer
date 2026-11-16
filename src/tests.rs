@@ -294,7 +294,15 @@ fn existing_media_is_imported_where_recognised_and_asked_about_otherwise() {
         (clash, Decision::Leave),
     ];
     let (imported, discarded, _) =
-        apply_existing(&settings, "psx", &plan.auto, &plan.duplicates, &decided).unwrap();
+        apply_existing(
+            &settings,
+            "psx",
+            &plan.auto,
+            &plan.duplicates,
+            &decided,
+            &crate::progress::Progress::default(),
+        )
+        .unwrap();
     assert_eq!((imported, discarded), (5, 3));
 
     let cover = media.join("FF7 (USA)/box-front.png");
@@ -426,7 +434,14 @@ fn a_scrape_on_one_machine_reaches_every_view_and_the_library_keeps_the_files() 
         .unwrap();
     // FF7's art lives under its first disc's name in the library; the set itself is the game.
     assert_eq!(ff7.target, media.join("FF7 (USA)/box-front.png"));
-    crate::media::apply_ingest(&settings, &mut catalog, "desk", &plan).unwrap();
+    crate::media::apply_ingest(
+        &settings,
+        &mut catalog,
+        "desk",
+        &plan,
+        &crate::progress::Progress::default(),
+    )
+    .unwrap();
 
     // The library holds real files; the machine's names are now projections of them.
     let title = media.join("Lemmings (USA)/title-screen.png");

@@ -15,6 +15,7 @@ use anyhow::{Context, Result, bail};
 
 use crate::catalog::Catalog;
 use crate::ownership;
+use crate::progress::Progress;
 use crate::platforms::{self, Layout, MEDIA_TYPES};
 use crate::project::{self, Link, MediaEntry};
 use crate::scan::{self, extension, file_name, is_save_name};
@@ -558,6 +559,7 @@ pub fn apply_existing(
     auto: &[Existing],
     duplicates: &[Existing],
     decided: &[(Existing, Decision)],
+    progress: &Progress,
 ) -> Result<(usize, usize, PathBuf)> {
     let library = &settings.library_root;
     let mut moves: Vec<(PathBuf, PathBuf)> = Vec::new();
@@ -628,6 +630,7 @@ pub fn apply_existing(
     }
     out.sync_all()?;
 
+    progress.stage("Moving media into place", moves.len() + discards.len());
     let mut emptied = BTreeSet::new();
     for (from, to) in &moves {
         let dir = to.parent().context("target has no folder")?;
@@ -636,11 +639,13 @@ pub fn apply_existing(
             .with_context(|| format!("move {} to {}", from.display(), to.display()))?;
         std::fs::remove_file(from).with_context(|| format!("remove {}", from.display()))?;
         emptied.extend(from.parent().map(Path::to_path_buf));
+        progress.step();
     }
     for rel in &discards {
         let from = library.join(rel);
         ownership::move_file(&from, &discard_dir.join(rel))?;
         emptied.extend(from.parent().map(Path::to_path_buf));
+        progress.step();
     }
     // Remove folders the moves emptied, up to (not including) the system's own folders.
     let stops = [settings.media_dir(system), settings.system_root(system)?];
@@ -826,7 +831,9 @@ pub fn apply_ingest(
     catalog: &mut Catalog,
     node_name: &str,
     plan: &IngestPlan,
+    progress: &Progress,
 ) -> Result<(usize, PathBuf)> {
+    progress.stage("Copying new media into the library", plan.items.len());
     let view_root = settings.view_root(node_name);
     let undo_dir = &settings.undo_dir;
     ownership::create_dir_all(undo_dir)
@@ -860,6 +867,7 @@ pub fn apply_ingest(
             item.target.display()
         )?;
         recorded.push((item.view_path.clone(), item.target.clone(), id));
+        progress.step();
     }
     out.sync_all()?;
     let tx = catalog.transaction()?;

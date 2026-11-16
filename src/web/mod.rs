@@ -6,6 +6,7 @@
 
 mod common;
 mod emulators;
+mod jobs;
 mod library;
 mod login;
 mod machines;
@@ -33,6 +34,11 @@ struct AppState {
     config: Arc<PathBuf>,
     /// One file-changing operation at a time.
     busy: Arc<Mutex<()>>,
+    /// Long operations running in the background, with their progress.
+    jobs: jobs::SharedJobs,
+    /// Machine → scraped media files in its view waiting to be imported, from the monitor's
+    /// latest pass.
+    new_media: Arc<std::sync::Mutex<std::collections::BTreeMap<String, usize>>>,
     auth: Arc<Auth>,
     /// Whether this process has loaded the bundled emulator catalog into the database yet.
     catalog_loaded: Arc<AtomicBool>,
@@ -41,6 +47,17 @@ struct AppState {
 impl AppState {
     fn settings(&self) -> anyhow::Result<Settings> {
         Settings::load(&self.config)
+    }
+
+    /// Scraped media waiting to be imported, per machine (machines with none left out).
+    fn new_media(&self) -> std::collections::BTreeMap<String, usize> {
+        self.new_media
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .iter()
+            .filter(|(_, n)| **n > 0)
+            .map(|(k, n)| (k.clone(), *n))
+            .collect()
     }
 
     /// Opens the database, refreshing the emulator catalog from the bundled copy once per run.
@@ -58,6 +75,8 @@ pub async fn serve(config: PathBuf, listen: &str, password_file: PathBuf) -> any
     let state = AppState {
         config: Arc::new(config),
         busy: Arc::new(Mutex::new(())),
+        jobs: Default::default(),
+        new_media: Default::default(),
         auth: Arc::new(Auth::new(password_file)),
         catalog_loaded: Arc::new(AtomicBool::new(false)),
     };
@@ -70,6 +89,7 @@ pub async fn serve(config: PathBuf, listen: &str, password_file: PathBuf) -> any
     }
     let protected = Router::new()
         .route("/", get(overview::dashboard))
+        .route("/jobs/{id}", get(jobs::poll))
         .route("/library", get(library::library_page))
         .route("/library/systems", post(library::system_add))
         .route("/library/systems/{id}/delete", post(library::system_delete))

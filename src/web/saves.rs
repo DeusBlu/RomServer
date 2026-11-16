@@ -24,15 +24,18 @@ use crate::ops;
 const SETTLE: Duration = Duration::from_secs(2);
 
 /// A full pass this often, for anything the watcher misses: writes that bypass `/mnt/user`
-/// (an Unraid share set to exclusive access), or an overflowing event queue.
-const INTERVAL: Duration = Duration::from_secs(600);
+/// (an Unraid share set to exclusive access), or an overflowing event queue. A pass also runs
+/// as soon as the server starts.
+const INTERVAL: Duration = Duration::from_secs(120);
 
 /// Runs the monitor in the background for as long as the server runs. It reacts to changes in
-/// machines' save folders (`views/<node>/machine/`): Samba on Unraid writes through the same
-/// `/mnt/user` mount the container sees, so the kernel reports a save the moment a machine
-/// writes it (checked 2026-11-08: create, write, close and delete over SMB all arrived). A pass
-/// waits for any file-changing operation to finish first (an apply creates files before
-/// recording them).
+/// machines' views (saves in `machine/`, scraped media in the media folders): Samba on Unraid
+/// writes through the same `/mnt/user` mount the container sees, so the kernel reports a file
+/// the moment a machine writes it (checked 2026-11-08: create, write, close and delete over SMB
+/// all arrived). Whether the machine is on doesn't matter: what it wrote is already on the
+/// server. Each pass brings saves in, then counts scraped media waiting to be imported, for the
+/// UI. A pass waits for any file-changing operation to finish first (an apply creates files
+/// before recording them).
 pub(super) fn spawn_monitor(state: AppState) {
     let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<()>();
     let watcher = notify::recommended_watcher(move |event: notify::Result<notify::Event>| {
@@ -69,6 +72,20 @@ pub(super) fn spawn_monitor(state: AppState) {
                 let settings = st.settings()?;
                 let mut db = Catalog::open(&settings.database)?;
                 monitor::refresh(&settings, &mut db)?;
+                let counts: std::collections::BTreeMap<String, usize> = settings
+                    .nodes
+                    .keys()
+                    .map(|node| {
+                        let count = crate::media::plan_ingest(&settings, &db, node)
+                            .map(|p| p.items.len())
+                            .unwrap_or_else(|e| {
+                                println!("[monitor] {node}: new media not counted: {e:#}");
+                                0
+                            });
+                        (node.clone(), count)
+                    })
+                    .collect();
+                *st.new_media.lock().unwrap_or_else(|e| e.into_inner()) = counts;
                 Ok::<_, anyhow::Error>(watch_roots(&settings))
             })
             .await;
@@ -85,12 +102,13 @@ pub(super) fn spawn_monitor(state: AppState) {
     });
 }
 
-/// The folders the watcher follows: each machine's save and state projections.
+/// The folders the watcher follows: each machine's whole view (saves, states and the folders
+/// its frontend scrapes media into).
 fn watch_roots(settings: &crate::settings::Settings) -> BTreeSet<PathBuf> {
     settings
         .nodes
         .keys()
-        .map(|n| settings.view_root(n).join(crate::saves::VIEW_MACHINE))
+        .map(|n| settings.view_root(n))
         .filter(|p| p.is_dir())
         .collect()
 }
@@ -129,6 +147,7 @@ pub(super) async fn banner(State(state): State<AppState>) -> Page {
     let Ok(settings) = state.settings() else {
         return Ok(html! {});
     };
+    let new_media = state.new_media();
     let alerts = blocking(move || Catalog::open(&settings.database)?.alerts()).await?;
     let saves = alerts
         .iter()
@@ -140,6 +159,12 @@ pub(super) async fn banner(State(state): State<AppState>) -> Page {
         .map(|a| a.node.as_str())
         .collect();
     Ok(html! {
+        @for (machine, count) in &new_media {
+            div.notice.ok {
+                strong { (count) " new media file(s) " } "scraped on " (machine) ". "
+                a href={"/machines/" (machine) "#new-media"} { "Review and import" }
+            }
+        }
         @if saves > 0 {
             div.notice.warn {
                 strong { (saves) " save file(s) " }

@@ -8,6 +8,7 @@ mod monitor;
 mod mounts;
 mod ops;
 mod ownership;
+mod progress;
 mod platforms;
 mod project;
 mod saves;

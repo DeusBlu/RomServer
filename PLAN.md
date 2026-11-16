@@ -629,6 +629,17 @@ and updates every machine's view with **additions and relinks only** (no preview
 can be removed). Re-scraped art replaces the library's (newest wins); the old file is kept in
 the undo folder. Mounts never change; the media just appears.
 
+**New media is noticed (2026-11-16).** The monitor watches every machine's whole view (saves
+and the folders its frontend scrapes into), runs a pass at startup and every 2 minutes as a
+fallback, and after each pass counts the media waiting in each view. A machine doesn't need to be
+on: whatever it scraped is already on the server's disk, and RomServer never connects to
+machines (the only credentials are each machine's own SMB credentials file, kept on the machine
+and checked by Unraid when it mounts). Waiting media shows as a banner on every page (refreshed
+every 20 s while a page is open), a "N new media" tag on the Machines list, and on the machine's
+page the preview opens by itself, with the import button. Long imports run as background jobs
+with a progress bar (`src/web/jobs.rs`, `src/progress.rs`); the job holds the one-operation lock,
+so the button can't be pressed twice.
+
 **Frontend fixes: ES-DE and cue tracks (2026-11-01).** ES-DE's defaults list `.bin` for every
 system that takes cue sheets (19 of them, PSX among them), so each cue's track files show up as
 games of their own. RomServer can't and doesn't touch a machine's ES-DE config; it advises. Each

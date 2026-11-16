@@ -38,6 +38,11 @@ td.ok { color: var(--ok); } td.warn, .card.warn .big { color: var(--warn); }
 .notice.ok { background: var(--okbg); color: var(--ok); }
 .notice.error { background: var(--badbg); color: var(--bad); }
 .notice.warn { background: var(--warnbg); color: var(--warn); }
+.job { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: .7rem 1rem;
+       margin: .75rem 0; }
+.job p { margin: .2rem 0; }
+.job progress { width: 100%; max-width: 480px; height: 1rem; accent-color: var(--accent); vertical-align: middle; }
+button:disabled { opacity: .5; cursor: wait; }
 .notice ul { margin: .4rem 0 0; padding-left: 1.2rem; }
 button { font: inherit; padding: .45rem .9rem; border-radius: 6px; border: 1px solid var(--accent);
          background: var(--accent); color: #fff; cursor: pointer; }

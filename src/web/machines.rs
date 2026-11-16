@@ -10,6 +10,7 @@ use serde::Deserialize;
 
 use super::AppState;
 use super::common::{Page, blocking, busy_guard, layout, settings_or_notice, spinner};
+use super::jobs;
 use super::emulators::{kind_tag, names, offered, parse_picks};
 use crate::catalog::Catalog;
 use crate::mounts::{self, MountKind, MountPlan};
@@ -71,6 +72,7 @@ pub(super) async fn machines_page(State(state): State<AppState>) -> Page {
         Ok(s) => s,
         Err(page) => return Ok(page),
     };
+    let new_media = state.new_media();
     Ok(layout(
         "Machines",
         html! {
@@ -82,7 +84,14 @@ pub(super) async fn machines_page(State(state): State<AppState>) -> Page {
                 tr { th { "Machine" } th { "Platform" } th { "Multi-disc" } th { "Emulators" } }
                 @for (name, node) in &settings.nodes {
                     tr {
-                        td { a href={"/machines/" (name)} { strong { (name) } } }
+                        td {
+                            a href={"/machines/" (name)} { strong { (name) } }
+                            @if let Some(count) = new_media.get(name) {
+                                " " a.tag.count href={"/machines/" (name) "#new-media"} {
+                                    (count) " new media"
+                                }
+                            }
+                        }
                         td { (platform_label(&node.platform)) }
                         td { (node.multi_disc.label()) }
                         td { (node.uses.values().map(Vec::len).sum::<usize>()) }
@@ -133,6 +142,7 @@ pub(super) async fn machine_page(State(state): State<AppState>, Path(name): Path
         Ok(s) => s,
         Err(page) => return Ok(page),
     };
+    let waiting_media = state.new_media().get(&name).copied().unwrap_or(0);
     let node = settings.node(&name)?;
     let systems: Vec<&str> = settings.node_systems(node).into_iter().collect();
     let (owned, offered, mount_plan, missing) = {
@@ -222,19 +232,27 @@ pub(super) async fn machine_page(State(state): State<AppState>, Path(name): Path
             }
             div #result {}
 
-            h2 { "New media added" }
+            h2 #new-media { "New media added" }
             p.muted {
                 "Scraped on " (name) "? Its frontend wrote the files into this machine's view. "
                 "RomServer copies them into the library's media folder under its own names, turns "
                 "this machine's files into projections, and adds the new media to every other "
                 "machine's view in its frontend's layout. Re-scraped art replaces what the "
-                "library had; the old file is kept in the undo folder."
+                "library had; the old file is kept in the undo folder. RomServer notices new "
+                "media on its own and points here."
             }
             form hx-post={"/machines/" (name) "/media/plan"} hx-target="#ingest" hx-indicator="#ingest-spin" {
                 button.secondary { "Find new media" }
                 (spinner("ingest-spin"))
             }
-            div #ingest {}
+            // When the monitor has already seen new media, the preview opens by itself.
+            @if waiting_media > 0 {
+                div #ingest hx-post={"/machines/" (name) "/media/plan"} hx-trigger="load" {
+                    span.muted { "Found " (waiting_media) " new media file(s); preparing the preview…" }
+                }
+            } @else {
+                div #ingest {}
+            }
 
             (mounts_section(&name, &mount_plan, &missing))
 
@@ -582,6 +600,7 @@ pub(super) async fn media_plan(State(state): State<AppState>, Path(name): Path<S
         } @else {
             details { summary { "Files" } (path_list(&rows)) }
             form hx-post={"/machines/" (name) "/media/import"} hx-target="#ingest" hx-indicator="#ingest-spin"
+                hx-disabled-elt="find button"
                 hx-confirm={"Import " (plan.items.len()) " media files from " (name) " and add them to every view?"} {
                 input type="hidden" name="expected" value=(plan.items.len());
                 button { "Import and project " (plan.items.len()) " files" }
@@ -591,7 +610,7 @@ pub(super) async fn media_plan(State(state): State<AppState>, Path(name): Path<S
 }
 
 /// Per machine: (links added, links relinked), or why its view couldn't be updated.
-type Projected = Vec<(String, Result<(usize, usize), String>)>;
+pub(super) type Projected = Vec<(String, Result<(usize, usize), String>)>;
 
 #[derive(Deserialize)]
 pub(super) struct IngestForm {
@@ -603,36 +622,55 @@ pub(super) async fn media_import(
     Path(name): Path<String>,
     Form(form): Form<IngestForm>,
 ) -> Page {
-    let _guard = busy_guard(&state)?;
     let settings = state.settings()?;
-    let n = name.clone();
-    let (imported, log, projected) = blocking(move || {
+    let waiting = state.new_media.clone();
+    jobs::start(&state, format!("Importing media from {name}"), move |progress| {
         let mut catalog = Catalog::open(&settings.database)?;
-        let plan = media::plan_ingest(&settings, &catalog, &n)?;
+        let plan = media::plan_ingest(&settings, &catalog, &name)?;
         if plan.items.len() != form.expected {
             bail!("the view changed since the preview; find new media again");
         }
-        let (imported, log) = media::apply_ingest(&settings, &mut catalog, &n, &plan)?;
+        let (imported, log) = media::apply_ingest(&settings, &mut catalog, &name, &plan, progress)?;
+        // Nothing waits in this view now; the banner clears without waiting for the monitor.
+        waiting
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .insert(name.clone(), 0);
         // Additions only, so no preview: nothing can be taken away from any view.
-        let projected: Projected = settings
-            .nodes
-            .keys()
-            .map(|node| {
-                let result = ops::apply_additions(&settings, &mut catalog, node)
-                    .map_err(|e| format!("{e:#}"));
-                (node.clone(), result)
-            })
-            .collect();
-        Ok((imported, log, projected))
+        let projected = project_everywhere(&settings, &mut catalog, progress);
+        Ok(html! {
+            div.notice.ok {
+                "Imported " (imported) " files from " (name) ". Undo log: " code { (log.display()) }
+            }
+            (projected_table(&projected))
+        })
     })
-    .await?;
-    Ok(html! {
-        div.notice.ok {
-            "Imported " (imported) " files from " (name) ". Undo log: " code { (log.display()) }
-        }
+}
+
+/// Adds new library files to every machine's view, one machine at a time.
+pub(super) fn project_everywhere(
+    settings: &crate::settings::Settings,
+    catalog: &mut Catalog,
+    progress: &crate::progress::Progress,
+) -> Projected {
+    progress.stage("Adding to every machine's view", settings.nodes.len());
+    settings
+        .nodes
+        .keys()
+        .map(|node| {
+            let result =
+                ops::apply_additions(settings, catalog, node).map_err(|e| format!("{e:#}"));
+            progress.step();
+            (node.clone(), result)
+        })
+        .collect()
+}
+
+pub(super) fn projected_table(projected: &Projected) -> Markup {
+    html! {
         table.grid {
             tr { th { "Machine" } th { "Added" } th { "Relinked" } }
-            @for (node, result) in &projected {
+            @for (node, result) in projected {
                 tr {
                     td { (node) }
                     @match result {
@@ -642,7 +680,7 @@ pub(super) async fn media_import(
                 }
             }
         }
-    })
+    }
 }
 
 async fn bin_fix(
