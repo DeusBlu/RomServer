@@ -294,11 +294,8 @@ fn mounts_section(name: &str, plan: &MountPlan, missing: &[std::path::PathBuf]) 
         }
         @if !missing.is_empty() {
             div.notice.warn {
-                p { (missing.len()) " save folder(s) don't exist on the server yet, and mounting a missing folder fails:" }
-                ul.paths { @for m in missing { li { (m.display()) } } }
-                form method="post" action={"/machines/" (name) "/save-folders"} {
-                    button { "Create them" }
-                }
+                p { (missing.len()) " of " (name) "'s save and state folders aren't in its view yet. "
+                    "Apply the view (above) before running the script: it creates them." }
             }
         }
         @if !plan.mounts.is_empty() {
@@ -490,6 +487,10 @@ pub(super) async fn machine_apply(
             bail!("the library or view changed since the preview; preview again");
         }
         sync::apply(&mut catalog, &n, &np.view_root, &np.plan)?;
+        // Every folder the machine's save and state mounts point at, even ones with nothing in
+        // them yet: a mount of a missing folder fails.
+        let index = crate::emulators::index(&settings)?;
+        crate::saves::sync_view(&settings, &mut catalog, &n, &crate::emulators::by_id(&index))?;
         Ok(np)
     })
     .await?;
@@ -539,25 +540,6 @@ pub(super) async fn mounts_script(
         body,
     )
         .into_response())
-}
-
-/// Creates the canonical save folders a machine's mounts need. Empty folders only; the
-/// library tools' rule (never change existing files) holds.
-pub(super) async fn save_folders_create(
-    State(state): State<AppState>,
-    Path(name): Path<String>,
-) -> Page<Redirect> {
-    let _guard = busy_guard(&state)?;
-    let plan = plan_for(&state, &name).await?;
-    blocking(move || {
-        for folder in mounts::missing_server_folders(&plan) {
-            crate::ownership::create_dir_all(&folder)
-                .with_context(|| format!("create {}", folder.display()))?;
-        }
-        Ok(())
-    })
-    .await?;
-    Ok(Redirect::to(&format!("/machines/{name}")))
 }
 
 pub(super) async fn media_plan(State(state): State<AppState>, Path(name): Path<String>) -> Page {

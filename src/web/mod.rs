@@ -112,10 +112,6 @@ pub async fn serve(config: PathBuf, listen: &str, password_file: PathBuf) -> any
             "/machines/{name}/media/import",
             post(machines::media_import),
         )
-        .route(
-            "/machines/{name}/save-folders",
-            post(machines::save_folders_create),
-        )
         .route("/saves", get(saves::saves_page))
         .route("/saves/banner", get(saves::banner))
         .route("/saves/refresh", post(saves::refresh_now))
